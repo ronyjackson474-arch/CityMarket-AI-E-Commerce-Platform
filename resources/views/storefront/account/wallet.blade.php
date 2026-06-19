@@ -1,8 +1,5 @@
-@extends('components.layouts.storefront')
+<x-layouts.storefront title="My Wallet — CityMarket">
 
-@section('title', 'My Wallet — CityMarket')
-
-@section('content')
 <div class="max-w-4xl mx-auto px-4 py-8">
     <h1 class="text-2xl font-bold text-gray-900 mb-6">My Wallet</h1>
 
@@ -18,7 +15,6 @@
 
     <div class="bg-white rounded-2xl shadow-sm p-6">
         <h2 class="font-semibold text-gray-900 mb-4">Transaction History</h2>
-
         @if($transactions->isEmpty())
             <p class="text-gray-400 text-sm py-8 text-center">No transactions yet.</p>
         @else
@@ -26,8 +22,7 @@
                 @foreach($transactions as $tx)
                     <div class="flex items-center justify-between p-3 rounded-xl bg-gray-50">
                         <div class="flex items-center gap-3">
-                            <div class="w-8 h-8 rounded-full flex items-center justify-center
-                                {{ $tx->type === 'credit' ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600' }}">
+                            <div class="w-8 h-8 rounded-full flex items-center justify-center {{ $tx->type === 'credit' ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600' }}">
                                 {{ $tx->type === 'credit' ? '↓' : '↑' }}
                             </div>
                             <div>
@@ -42,8 +37,8 @@
                 @endforeach
             </div>
         @endif
-
         <div class="mt-4">{{ $transactions->links() }}</div>
     </div>
 </div>
-@endsection
+
+</x-layouts.storefront>

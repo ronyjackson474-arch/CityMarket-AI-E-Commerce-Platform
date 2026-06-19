@@ -1,8 +1,5 @@
-@extends('components.layouts.admin')
+<x-layouts.admin title="Return Requests — Admin">
 
-@section('title', 'Return Requests — Admin')
-
-@section('content')
 <h1 class="text-2xl font-bold text-gray-900 mb-6">Return Requests</h1>
 
 @if(session('success'))
@@ -52,7 +49,7 @@
                             <span class="text-xs text-gray-400">No actions</span>
                         @endif
                     </td>
-</tr>
+                </tr>
             @empty
                 <tr><td colspan="6" class="px-4 py-12 text-center text-gray-400">No return requests.</td></tr>
             @endforelse
@@ -61,4 +58,5 @@
 </div>
 
 <div class="mt-4">{{ $returns->links() }}</div>
-@endsection
+
+</x-layouts.admin>

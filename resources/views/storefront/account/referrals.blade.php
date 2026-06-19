@@ -1,15 +1,12 @@
-@extends('components.layouts.storefront')
+<x-layouts.storefront title="Refer & Earn — CityMarket">
 
-@section('title', 'Refer & Earn — CityMarket')
-
-@section('content')
 <div class="max-w-4xl mx-auto px-4 py-8">
     <h1 class="text-2xl font-bold text-gray-900 mb-6">Refer & Earn</h1>
 
     <div class="bg-gradient-to-br from-rose-500 to-pink-600 rounded-2xl p-8 text-white mb-6 text-center">
         <h2 class="text-xl font-bold mb-2">Your Referral Code</h2>
         <p class="text-4xl font-bold tracking-wider bg-white/20 rounded-xl py-3 px-6 inline-block mt-2">{{ $wallet->referral_code ?? 'N/A' }}</p>
-        <p class="text-rose-100 text-sm mt-4">Share this code with friends. When they sign up, you both get ₹100 bonus!</p>
+        <p class="text-rose-100 text-sm mt-4">Share this code with friends. When they sign up, you both get 100 bonus points!</p>
     </div>
 
     <div class="bg-white rounded-2xl shadow-sm p-6">
@@ -29,11 +26,12 @@
                                 <div class="text-xs text-gray-500">Joined {{ $ref->created_at->format('M d, Y') }}</div>
                             </div>
                         </div>
-                        <span class="text-green-600 font-semibold text-sm">+₹100</span>
+                        <span class="text-green-600 font-semibold text-sm">+100</span>
                     </div>
                 @endforeach
             </div>
         @endif
     </div>
 </div>
-@endsection
+
+</x-layouts.storefront>

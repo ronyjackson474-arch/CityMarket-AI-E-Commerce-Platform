@@ -1,8 +1,5 @@
-@extends('components.layouts.admin')
+<x-layouts.admin title="Coupons — Admin">
 
-@section('title', 'Coupons — Admin')
-
-@section('content')
 <div class="flex items-center justify-between mb-6">
     <h1 class="text-2xl font-bold text-gray-900">Coupons</h1>
     <a href="{{ route('admin.coupons.create') }}" class="px-4 py-2 bg-rose-600 text-white rounded-xl font-medium hover:bg-rose-700">+ New Coupon</a>
@@ -56,4 +53,5 @@
 </div>
 
 <div class="mt-4">{{ $coupons->links() }}</div>
-@endsection
+
+</x-layouts.admin>

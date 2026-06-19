@@ -1,8 +1,5 @@
-@extends('components.layouts.admin')
+<x-layouts.admin title="AI Assistant — Admin">
 
-@section('title', 'AI Assistant — Admin')
-
-@section('content')
 <div class="max-w-4xl mx-auto">
     <h1 class="text-2xl font-bold text-gray-900 mb-2">AI Admin Assistant</h1>
     <p class="text-gray-500 text-sm mb-6">Ask questions about your store in natural language. Get instant insights.</p>
@@ -85,4 +82,5 @@ document.querySelectorAll('.quick-q').forEach(btn => {
     });
 });
 </script>
-@endsection
+
+</x-layouts.admin>

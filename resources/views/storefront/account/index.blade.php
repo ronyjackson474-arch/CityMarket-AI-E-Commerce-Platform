@@ -1,8 +1,5 @@
-@extends('components.layouts.storefront')
+<x-layouts.storefront title="My Account — CityMarket">
 
-@section('title', 'My Account — CityMarket')
-
-@section('content')
 <div class="max-w-7xl mx-auto px-4 py-8">
     <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
         {{-- Sidebar --}}
@@ -80,4 +77,5 @@
         </div>
     </div>
 </div>
-@endsection
+
+</x-layouts.storefront>

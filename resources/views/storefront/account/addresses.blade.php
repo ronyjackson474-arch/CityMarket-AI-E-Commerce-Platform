@@ -1,8 +1,5 @@
-@extends('components.layouts.storefront')
+<x-layouts.storefront title="Addresses — CityMarket">
 
-@section('title', 'Addresses — CityMarket')
-
-@section('content')
 <div class="max-w-4xl mx-auto px-4 py-8">
     <h1 class="text-2xl font-bold text-gray-900 mb-6">Saved Addresses</h1>
 
@@ -20,7 +17,7 @@
                 <p class="text-sm text-gray-600">{{ $address->address_line1 }}</p>
                 @if($address->address_line2)<p class="text-sm text-gray-600">{{ $address->address_line2 }}</p>@endif
                 <p class="text-sm text-gray-600">{{ $address->city }}, {{ $address->state }} - {{ $address->pincode }}</p>
-                <p class="text-sm text-gray-600 mt-1">📞 {{ $address->phone }}</p>
+                <p class="text-sm text-gray-600 mt-1">Phone: {{ $address->phone }}</p>
                 <form action="{{ route('account.addresses.delete', $address) }}" method="POST" class="mt-3">
                     @csrf
                     <button type="submit" class="text-xs text-red-500 hover:text-red-700">Delete Address</button>
@@ -33,7 +30,6 @@
         @endforelse
     </div>
 
-    {{-- Add new address --}}
     <div class="bg-white rounded-2xl shadow-sm p-6">
         <h2 class="font-semibold text-gray-900 mb-4">Add New Address</h2>
         <form action="{{ route('account.addresses.store') }}" method="POST" class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -76,4 +72,5 @@
         </form>
     </div>
 </div>
-@endsection
+
+</x-layouts.storefront>

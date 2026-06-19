@@ -52,6 +52,7 @@ Route::post('/assistant', [AiAssistantController::class, 'search'])->name('assis
 Route::get('/support', function () {
     return view('storefront.support-chat');
 })->name('support');
+Route::post('/support/send', [AiAssistantController::class, 'supportSend'])->name('support.send');
 
 // ===== Storefront (authenticated customer) =====
 Route::middleware(['auth'])->group(function () {

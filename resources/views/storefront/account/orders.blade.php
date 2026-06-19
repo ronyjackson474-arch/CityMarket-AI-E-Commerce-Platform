@@ -1,8 +1,5 @@
-@extends('components.layouts.storefront')
+<x-layouts.storefront title="My Orders — CityMarket">
 
-@section('title', 'My Orders — CityMarket')
-
-@section('content')
 <div class="max-w-5xl mx-auto px-4 py-8">
     <h1 class="text-2xl font-bold text-gray-900 mb-6">My Orders</h1>
 
@@ -50,4 +47,5 @@
         <div class="mt-6">{{ $orders->links() }}</div>
     @endif
 </div>
-@endsection
+
+</x-layouts.storefront>

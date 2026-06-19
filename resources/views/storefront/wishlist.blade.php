@@ -1,8 +1,5 @@
-@extends('components.layouts.storefront')
+<x-layouts.storefront title="My Wishlist — CityMarket">
 
-@section('title', 'My Wishlist — CityMarket')
-
-@section('content')
 <div class="max-w-6xl mx-auto px-4 py-8">
     <div class="flex items-center justify-between mb-6">
         <h1 class="text-2xl font-bold text-gray-900">My Wishlist</h1>
@@ -26,8 +23,7 @@
                 <div class="bg-white rounded-2xl shadow-sm overflow-hidden group">
                     <a href="{{ route('product', $product->slug) }}">
                         @if($product->images->isNotEmpty())
-                            <img src="{{ asset('storage/' . ($product->images->firstWhere('is_primary', true)?->image_path ?? $product->images->first()->image_path)) }}"
-                                 alt="{{ $product->name }}" class="w-full h-44 object-cover">
+                            <img src="{{ asset('storage/' . ($product->images->firstWhere('is_primary', true)?->image_path ?? $product->images->first()->image_path)) }}" alt="{{ $product->name }}" class="w-full h-44 object-cover">
                         @else
                             <div class="w-full h-44 bg-gray-100 flex items-center justify-center text-gray-300 text-sm">No image</div>
                         @endif
@@ -63,8 +59,8 @@
                 </div>
             @endforeach
         </div>
-
         <div class="mt-6">{{ $products->links() }}</div>
     @endif
 </div>
-@endsection
+
+</x-layouts.storefront>

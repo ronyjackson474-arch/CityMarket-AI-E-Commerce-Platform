@@ -55,12 +55,12 @@ document.getElementById('chat-form').addEventListener('submit', async (e) => {
 
     try {
         @auth
-        const resp = await fetch(`${API_BASE}/api/chat/send`, {
+        const resp = await fetch('{{ route("support.send") }}', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'Accept': 'application/json',
-                'Authorization': 'Bearer ' + (window.API_TOKEN || '')
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
             },
             body: JSON.stringify({ message, conversation_id: conversationId }),
         });

@@ -1,8 +1,5 @@
-@extends('components.layouts.admin')
+<x-layouts.admin title="Edit Coupon — Admin">
 
-@section('title', 'Edit Coupon — Admin')
-
-@section('content')
 <div class="max-w-2xl mx-auto">
     <h1 class="text-2xl font-bold text-gray-900 mb-6">Edit Coupon</h1>
 
@@ -17,7 +14,7 @@
                 <label class="block text-sm font-medium text-gray-700 mb-1">Type</label>
                 <select name="type" class="w-full rounded-xl border-gray-300">
                     <option value="percentage" {{ $coupon->type === 'percentage' ? 'selected' : '' }}>Percentage (%)</option>
-                    <option value="fixed" {{ $coupon->type === 'fixed' ? 'selected' : '' }}>Fixed Amount (₹)</option>
+                    <option value="fixed" {{ $coupon->type === 'fixed' ? 'selected' : '' }}>Fixed Amount</option>
                 </select>
             </div>
             <div>
@@ -27,11 +24,11 @@
         </div>
         <div class="grid grid-cols-2 gap-4">
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Min Order Amount (₹)</label>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Min Order Amount</label>
                 <input type="number" name="min_order_amount" step="0.01" min="0" value="{{ old('min_order_amount', $coupon->min_order_amount) }}" class="w-full rounded-xl border-gray-300">
             </div>
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Max Discount (₹)</label>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Max Discount</label>
                 <input type="number" name="max_discount" step="0.01" min="0" value="{{ old('max_discount', $coupon->max_discount) }}" class="w-full rounded-xl border-gray-300">
             </div>
         </div>
@@ -60,4 +57,5 @@
         </div>
     </form>
 </div>
-@endsection
+
+</x-layouts.admin>
