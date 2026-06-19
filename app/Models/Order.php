@@ -17,10 +17,12 @@ class Order extends Model
     public const STATUS_SHIPPED = 'shipped';
     public const STATUS_DELIVERED = 'delivered';
     public const STATUS_CANCELLED = 'cancelled';
+    public const STATUS_RETURNED = 'returned';
 
     public const STATUSES = [
         self::STATUS_PENDING, self::STATUS_CONFIRMED, self::STATUS_PACKED,
         self::STATUS_SHIPPED, self::STATUS_DELIVERED, self::STATUS_CANCELLED,
+        self::STATUS_RETURNED,
     ];
 
     protected $fillable = [

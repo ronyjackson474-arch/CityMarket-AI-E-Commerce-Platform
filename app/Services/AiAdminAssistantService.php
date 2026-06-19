@@ -13,17 +13,17 @@ class AiAdminAssistantService
 {
     private function apiKey(): string
     {
-        return env('OPENAI_API_KEY');
+        return config('services.openai.key') ?? env('OPENAI_API_KEY', '');
     }
 
     private function baseUrl(): string
     {
-        return env('OPENAI_BASE_URL', 'https://api.openai.com/v1');
+        return config('services.openai.base_url') ?? env('OPENAI_BASE_URL', 'https://api.openai.com/v1');
     }
 
     private function model(): string
     {
-        return env('AI_MODEL', 'drytis/kimi-k2.5');
+        return config('services.openai.model') ?? env('AI_MODEL', 'drytis/kimi-k2.5');
     }
 
     /**

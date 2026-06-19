@@ -44,8 +44,11 @@ document.getElementById('ai-form').addEventListener('submit', async (e) => {
 
     if (!question) return;
 
+    // Escape HTML to prevent XSS
+    const esc = (str) => { const d = document.createElement('div'); d.textContent = str; return d.innerHTML; };
+
     // Add user message
-    chatArea.innerHTML += `<div class="flex justify-end"><div class="bg-rose-50 text-rose-900 rounded-2xl px-4 py-2 max-w-[80%] text-sm">${question}</div></div>`;
+    chatArea.innerHTML += `<div class="flex justify-end"><div class="bg-rose-50 text-rose-900 rounded-2xl px-4 py-2 max-w-[80%] text-sm">${esc(question)}</div></div>`;
     input.value = '';
     submitBtn.disabled = true;
     submitBtn.textContent = 'Thinking...';
@@ -65,7 +68,7 @@ document.getElementById('ai-form').addEventListener('submit', async (e) => {
         const data = await resp.json();
         const answer = data.answer || 'No response';
 
-        chatArea.innerHTML += `<div class="flex justify-start"><div class="bg-gray-100 text-gray-800 rounded-2xl px-4 py-2 max-w-[80%] text-sm whitespace-pre-wrap">${answer}</div></div>`;
+        chatArea.innerHTML += `<div class="flex justify-start"><div class="bg-gray-100 text-gray-800 rounded-2xl px-4 py-2 max-w-[80%] text-sm whitespace-pre-wrap">${esc(answer)}</div></div>`;
     } catch (err) {
         chatArea.innerHTML += `<div class="flex justify-start"><div class="bg-red-50 text-red-600 rounded-2xl px-4 py-2 max-w-[80%] text-sm">Sorry, an error occurred. Please try again.</div></div>`;
     }

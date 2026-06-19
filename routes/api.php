@@ -79,5 +79,8 @@ Route::middleware('auth:sanctum')->group(function () {
 
 // AI Admin (admin-only via sanctum)
 Route::middleware(['auth:sanctum'])->prefix('admin/ai')->group(function () {
-    Route::post('query', [AdminAiAssistantController::class, 'query']);
+    Route::post('query', function (\Illuminate\Http\Request $request) {
+        abort_unless($request->user()->isAdmin(), 403, 'Admin access required.');
+        return app(AdminAiAssistantController::class)->query($request, app(\App\Services\AiAdminAssistantService::class));
+    });
 });

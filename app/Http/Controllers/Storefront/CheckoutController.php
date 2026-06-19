@@ -122,7 +122,14 @@ class CheckoutController extends Controller
 
     public function confirmation(string $orderNumber)
     {
-        $order = Order::where('order_number', $orderNumber)->with('items.product')->firstOrFail();
+        $query = Order::where('order_number', $orderNumber)->with('items.product');
+
+        // Scope to authenticated user to prevent IDOR
+        if (Auth::check()) {
+            $query->where('user_id', Auth::id());
+        }
+
+        $order = $query->firstOrFail();
 
         return view('storefront.order-confirmation', compact('order'));
     }
