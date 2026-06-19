@@ -12,8 +12,14 @@ import 'dart:convert';
 import 'package:http/http.dart as http;
 
 class ApiService {
-  // Configure this in production
-  static const String baseUrl = 'https://citymarket-ai-e-comm-2sb7p3.drytis.dev/api';
+  // Configure this for your environment
+  // In production, load from environment or app config
+  static String baseUrl = 'https://your-domain.com/api';
+
+  /// Set the base URL for your CityMarket deployment
+  static void configure(String url) {
+    baseUrl = url.endsWith('/api') ? url : '${url}/api';
+  }
 
   String? _token;
 
