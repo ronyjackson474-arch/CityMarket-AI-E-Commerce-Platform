@@ -78,6 +78,27 @@ class Product extends Model
         return $this->hasMany(Review::class);
     }
 
+    /** Scope: only active products. */
+    public function scopeActive(Builder $query): Builder
+    {
+        return $query->where('is_active', true);
+    }
+
+    /** Scope: only featured products. */
+    public function scopeFeatured(Builder $query): Builder
+    {
+        return $query->where('is_featured', true)->where('is_active', true);
+    }
+
+    /** Scope: flash deal products. */
+    public function scopeFlashDeals(Builder $query): Builder
+    {
+        return $query->where('is_flash_deal', true)
+            ->where('is_active', true)
+            ->whereNotNull('sale_price')
+            ->whereColumn('sale_price', '<', 'price');
+    }
+
     public function wishlistedBy(): BelongsToMany
     {
         return $this->belongsToMany(User::class, 'wishlists')->withTimestamps();

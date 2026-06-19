@@ -28,7 +28,10 @@
                     ['route' => 'admin.categories.index', 'label' => 'Categories', 'icon' => '🗂️'],
                     ['route' => 'admin.brands.index', 'label' => 'Brands', 'icon' => '🏷️'],
                     ['route' => 'admin.orders.index', 'label' => 'Orders', 'icon' => '🧾'],
+                    ['route' => 'admin.returns.index', 'label' => 'Returns', 'icon' => '↩️'],
+                    ['route' => 'admin.coupons.index', 'label' => 'Coupons', 'icon' => '🎟️'],
                     ['route' => 'admin.users.index', 'label' => 'Users', 'icon' => '👥'],
+                    ['route' => 'admin.ai-assistant.index', 'label' => 'AI Assistant', 'icon' => '🤖'],
                 ] as $item)
                     <a href="{{ route($item['route']) }}"
                         class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-ink-800 transition-colors {{ (request()->routeIs($item['route']) || request()->routeIs(str_replace('.index', '.*', $item['route']))) ? 'bg-brand-600 text-white hover:bg-brand-600' : '' }}">
@@ -73,7 +76,10 @@
                     ['route' => 'admin.categories.index', 'label' => 'Categories'],
                     ['route' => 'admin.brands.index', 'label' => 'Brands'],
                     ['route' => 'admin.orders.index', 'label' => 'Orders'],
+                    ['route' => 'admin.returns.index', 'label' => 'Returns'],
+                    ['route' => 'admin.coupons.index', 'label' => 'Coupons'],
                     ['route' => 'admin.users.index', 'label' => 'Users'],
+                    ['route' => 'admin.ai-assistant.index', 'label' => 'AI Assistant'],
                 ] as $item)
                     <a href="{{ route($item['route']) }}" class="px-3 py-1.5 rounded-lg text-sm whitespace-nowrap {{ request()->routeIs($item['route']) ? 'bg-brand-600 text-white' : 'bg-ink-100 text-ink-600' }}">{{ $item['label'] }}</a>
                 @endforeach

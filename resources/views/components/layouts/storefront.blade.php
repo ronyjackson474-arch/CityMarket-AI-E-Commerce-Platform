@@ -62,8 +62,11 @@
             <!-- Actions -->
             <div class="flex items-center gap-1">
                 @auth
-                    <a href="{{ route('checkout') }}" class="p-2.5 text-ink-600 hover:text-brand-600 hover:bg-brand-50 rounded-lg transition-colors" title="Orders">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
+                    <a href="{{ route('account') }}" class="p-2.5 text-ink-600 hover:text-brand-600 hover:bg-brand-50 rounded-lg transition-colors" title="My Account">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                    </a>
+                    <a href="{{ route('wishlist') }}" class="p-2.5 text-ink-600 hover:text-brand-600 hover:bg-brand-50 rounded-lg transition-colors" title="Wishlist">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
                     </a>
                 @endauth
                 <a href="{{ route('cart') }}" class="relative p-2.5 text-ink-600 hover:text-brand-600 hover:bg-brand-50 rounded-lg transition-colors" title="Cart">
@@ -123,7 +126,10 @@
                 <h4 class="text-white font-semibold mb-3 text-sm">Account</h4>
                 <ul class="space-y-2 text-sm">
                     @auth
-                        <li><a href="{{ route('checkout') }}" class="hover:text-white">My Orders</a></li>
+                        <li><a href="{{ route('account') }}" class="hover:text-white">My Account</a></li>
+                        <li><a href="{{ route('account.orders') }}" class="hover:text-white">My Orders</a></li>
+                        <li><a href="{{ route('wishlist') }}" class="hover:text-white">Wishlist</a></li>
+                        <li><a href="{{ route('support') }}" class="hover:text-white">Support</a></li>
                         <li><a href="{{ route('logout') }}" class="hover:text-white" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">Logout</a></li>
                     @else
                         <li><a href="{{ route('login') }}" class="hover:text-white">Login</a></li>

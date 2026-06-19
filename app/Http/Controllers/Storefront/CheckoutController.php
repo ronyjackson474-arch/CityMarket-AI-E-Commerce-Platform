@@ -8,6 +8,7 @@ use App\Models\Coupon;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Services\CartService;
+use App\Services\WalletService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -17,6 +18,7 @@ class CheckoutController extends Controller
 {
     public function __construct(
         private CartService $cartService,
+        private WalletService $walletService,
     ) {}
 
     public function index(Request $request)
@@ -111,8 +113,11 @@ class CheckoutController extends Controller
             return $order;
         });
 
+        // Award 1% cashback to user wallet
+        $this->walletService->awardOrderCashback($order);
+
         return redirect()->route('order.confirmation', $order->order_number)
-            ->with('success', 'Order placed successfully!');
+            ->with('success', 'Order placed successfully! You earned ₹' . number_format((float)$order->total * 0.01) . ' cashback.');
     }
 
     public function confirmation(string $orderNumber)

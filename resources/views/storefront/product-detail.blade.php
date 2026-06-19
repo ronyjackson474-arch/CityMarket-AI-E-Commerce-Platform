@@ -82,19 +82,29 @@
 
             <!-- Add to cart -->
             @if($product->stock > 0)
-                <form action="{{ route('cart.add') }}" method="POST" class="flex items-center gap-3">
-                    @csrf
-                    <input type="hidden" name="product_id" value="{{ $product->id }}">
-                    <div class="flex items-center border border-ink-200 rounded-lg overflow-hidden">
-                        <button type="button" onclick="this.nextElementSibling.stepDown()" class="px-3 py-2.5 text-ink-600 hover:bg-ink-50">−</button>
-                        <input type="number" name="quantity" value="1" min="1" max="{{ $product->stock }}" class="w-14 text-center border-0 focus:ring-0 outline-none">
-                        <button type="button" onclick="this.previousElementSibling.stepUp()" class="px-3 py-2.5 text-ink-600 hover:bg-ink-50">+</button>
-                    </div>
-                    <button type="submit" class="flex-1 bg-brand-600 text-white font-semibold py-2.5 px-6 rounded-lg hover:bg-brand-700 transition-colors flex items-center justify-center gap-2">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
-                        Add to Cart
-                    </button>
-                </form>
+                <div class="flex items-center gap-3">
+                    <form action="{{ route('cart.add') }}" method="POST" class="flex-1 flex items-center gap-3">
+                        @csrf
+                        <input type="hidden" name="product_id" value="{{ $product->id }}">
+                        <div class="flex items-center border border-ink-200 rounded-lg overflow-hidden">
+                            <button type="button" onclick="this.nextElementSibling.stepDown()" class="px-3 py-2.5 text-ink-600 hover:bg-ink-50">−</button>
+                            <input type="number" name="quantity" value="1" min="1" max="{{ $product->stock }}" class="w-14 text-center border-0 focus:ring-0 outline-none">
+                            <button type="button" onclick="this.previousElementSibling.stepUp()" class="px-3 py-2.5 text-ink-600 hover:bg-ink-50">+</button>
+                        </div>
+                        <button type="submit" class="flex-1 bg-brand-600 text-white font-semibold py-2.5 px-6 rounded-lg hover:bg-brand-700 transition-colors flex items-center justify-center gap-2">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+                            Add to Cart
+                        </button>
+                    </form>
+                    @auth
+                        <form action="{{ route('wishlist.add') }}" method="POST">
+                            @csrf
+                            <input type="hidden" name="product_id" value="{{ $product->id }}">
+                            <button type="submit" class="p-2.5 border-2 border-ink-200 rounded-lg text-ink-600 hover:text-brand-600 hover:border-brand-400 transition-colors" title="Add to Wishlist">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
+                            </button>
+                        </form>
+                    @endauth
             @else
                 <div class="bg-ink-100 text-ink-500 text-center py-3 rounded-lg font-medium">Currently Out of Stock</div>
             @endif
@@ -151,7 +161,28 @@
     </section>
     @endif
 
-    <!-- Related -->
+    <!-- Write a Review -->
+    @auth
+        <section class="mb-12">
+            <h2 class="text-lg font-bold text-ink-900 mb-4">Write a Review</h2>
+            <form action="{{ route('review.store', $product->slug) }}" method="POST" class="bg-white rounded-xl border border-ink-100 p-4 space-y-3">
+                @csrf
+                <div class="flex items-center gap-2">
+                    <label class="text-sm font-medium text-gray-700">Rating:</label>
+                    <select name="rating" class="rounded-lg border-gray-300 text-sm" required>
+                        <option value="5">★★★★★ (5)</option>
+                        <option value="4">★★★★ (4)</option>
+                        <option value="3">★★★ (3)</option>
+                        <option value="2">★★ (2)</option>
+                        <option value="1">★ (1)</option>
+                    </select>
+                </div>
+                <input type="text" name="title" placeholder="Review title (optional)" class="w-full rounded-lg border-gray-300 text-sm">
+                <textarea name="body" rows="3" placeholder="Share your experience..." class="w-full rounded-lg border-gray-300 text-sm"></textarea>
+                <button type="submit" class="px-4 py-2 bg-rose-600 text-white rounded-lg text-sm font-medium hover:bg-rose-700">Post Review</button>
+            </form>
+        </section>
+    @endauth
     @if($related->isNotEmpty())
     <section>
         <h2 class="text-lg font-bold text-ink-900 mb-4">You May Also Like</h2>

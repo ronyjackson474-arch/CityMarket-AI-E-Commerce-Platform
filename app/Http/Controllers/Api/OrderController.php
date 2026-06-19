@@ -8,6 +8,7 @@ use App\Models\Coupon;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Services\CartService;
+use App\Services\WalletService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -16,6 +17,7 @@ class OrderController extends Controller
 {
     public function __construct(
         private CartService $cartService,
+        private WalletService $walletService,
     ) {}
 
     public function index(Request $request)
@@ -129,6 +131,9 @@ class OrderController extends Controller
 
             return $order;
         });
+
+        // Award 1% cashback to user wallet
+        $this->walletService->awardOrderCashback($order);
 
         return response()->json([
             'message' => 'Order placed successfully.',

@@ -92,6 +92,23 @@
         </div>
     </section>
 
+    <!-- AI Recommendations (logged-in only) -->
+    @auth
+        @if($recommendations->isNotEmpty())
+        <section class="mb-8">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-lg font-bold text-ink-900">✨ Recommended For You</h2>
+                <span class="text-xs bg-purple-100 text-purple-600 px-2 py-1 rounded-full font-medium">AI Powered</span>
+            </div>
+            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
+                @foreach($recommendations as $product)
+                    <x-product-card :product="$product" />
+                @endforeach
+            </div>
+        </section>
+        @endif
+    @endauth
+
     <!-- Brands -->
     @if($brands->isNotEmpty())
     <section class="mb-6">
