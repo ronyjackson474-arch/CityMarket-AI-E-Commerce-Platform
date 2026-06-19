@@ -18,11 +18,13 @@ class AiSearchTest extends TestCase
         Product::factory()->create([
             'name' => 'Nike Running Shoes',
             'price' => 3000,
+            'rating' => 4.5,
             'is_active' => true,
         ]);
         Product::factory()->create([
             'name' => 'Adidas Sneakers',
             'price' => 4000,
+            'rating' => 4.5,
             'is_active' => true,
         ]);
 

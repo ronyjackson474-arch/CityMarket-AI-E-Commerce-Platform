@@ -183,6 +183,46 @@ class ProductSeeder extends Seeder
             ['name' => 'Tata Salt 1kg (Pack of 4)', 'category' => 'Grocery', 'brand' => 'Himalaya',
              'price' => 120, 'stock' => 1000, 'rating' => 4.7,
              'description' => 'Iodized salt trusted by millions of Indian households.'],
+            ['name' => 'Aashirvaad Atta 5kg', 'category' => 'Grocery', 'brand' => 'Himalaya',
+             'price' => 299, 'sale_price' => 249, 'stock' => 800, 'rating' => 4.6, 'featured' => true,
+             'description' => 'Premium whole wheat flour for soft, fluffy rotis.'],
+            ['name' => 'Tetley Green Tea Bags (Pack of 25)', 'category' => 'Grocery', 'brand' => 'Himalaya',
+             'price' => 199, 'sale_price' => 149, 'stock' => 500, 'rating' => 4.3, 'flash_deal' => true,
+             'description' => 'Refreshing green tea bags packed with antioxidants.'],
+
+            // ---- Additional Fashion ----
+            ['name' => 'Nike Dri-FIT Training T-Shirt', 'category' => $f, 'brand' => 'Nike',
+             'price' => 1295, 'sale_price' => 795, 'stock' => 200, 'rating' => 4.5, 'flash_deal' => true,
+             'description' => 'Moisture-wicking Dri-FIT fabric keeps you dry during workouts.'],
+            ['name' => 'Adidas Track Pants', 'category' => $f, 'brand' => 'Adidas',
+             'price' => 2499, 'sale_price' => 1799, 'stock' => 150, 'rating' => 4.4,
+             'description' => 'Comfortable track pants with iconic 3-stripes design.'],
+
+            // ---- Additional Electronics ----
+            ['name' => 'Mi Smart Band 8', 'category' => $e, 'brand' => 'Mi',
+             'price' => 3499, 'sale_price' => 2799, 'stock' => 120, 'rating' => 4.4, 'featured' => true, 'flash_deal' => true,
+             'description' => 'AMOLED display, 150+ sports modes, and 16-day battery life.'],
+            ['name' => 'boAt Airdopes 141 Wireless Earbuds', 'category' => $e, 'brand' => 'boAt',
+             'price' => 2990, 'sale_price' => 1299, 'stock' => 300, 'rating' => 4.2, 'review_count' => 8900, 'flash_deal' => true,
+             'description' => 'Up to 42 hours playback, ENx technology, and Beast Mode for gaming.'],
+            ['name' => 'Logitech MX Master 3S Mouse', 'category' => $e, 'brand' => 'Sony',
+             'price' => 9995, 'sale_price' => 7995, 'stock' => 60, 'rating' => 4.8, 'featured' => true,
+             'description' => 'Premium wireless mouse with ultra-quiet clicks and fast scrolling.'],
+
+            // ---- Additional Home ----
+            ['name' => 'Godrej Aer Room Freshener', 'category' => $h, 'brand' => 'Philips',
+             'price' => 279, 'stock' => 500, 'rating' => 4.2,
+             'description' => 'Long-lasting room freshener with refreshing fragrance.'],
+
+            // ---- Additional Sports ----
+            ['name' => 'Nike Pro Combat Compression Shorts', 'category' => $s, 'brand' => 'Nike',
+             'price' => 1995, 'sale_price' => 1395, 'stock' => 100, 'rating' => 4.4,
+             'description' => 'Compression fit for muscle support during intense workouts.'],
+
+            // ---- Additional Beauty ----
+            ['name' => 'Mamaearth Onion Hair Oil 250ml', 'category' => $b, 'brand' => 'Himalaya',
+             'price' => 449, 'sale_price' => 329, 'stock' => 400, 'rating' => 4.3, 'flash_deal' => true,
+             'description' => 'Onion oil and redensyl for hair growth and scalp nourishment.'],
         ];
     }
 }

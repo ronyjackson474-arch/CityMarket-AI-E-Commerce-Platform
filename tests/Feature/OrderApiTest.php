@@ -80,7 +80,7 @@ class OrderApiTest extends TestCase
     public function test_can_apply_coupon(): void
     {
         $user = User::factory()->create();
-        $product = Product::factory()->create(['stock' => 10, 'price' => 1000]);
+        $product = Product::factory()->create(['stock' => 10, 'price' => 1000, 'sale_price' => null]);
 
         $cart = Cart::factory()->for($user)->create();
         $cart->items()->create(['product_id' => $product->id, 'quantity' => 2]);
