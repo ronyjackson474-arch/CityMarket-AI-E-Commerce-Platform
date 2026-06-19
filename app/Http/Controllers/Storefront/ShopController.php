@@ -1,0 +1,57 @@
+<?php
+
+namespace App\Http\Controllers\Storefront;
+
+use App\Http\Controllers\Controller;
+use App\Models\Brand;
+use App\Models\Category;
+use App\Models\Product;
+use Illuminate\Http\Request;
+
+class ShopController extends Controller
+{
+    public function index(Request $request)
+    {
+        $filters = $request->only([
+            'category', 'category_slug', 'brand', 'price_min', 'price_max',
+            'min_rating', 'search', 'sort', 'on_sale',
+        ]);
+
+        $products = Product::query()
+            ->where('is_active', true)
+            ->applyFilters($filters)
+            ->with(['category:id,name,slug', 'brand:id,name,slug', 'images' => fn ($q) => $q->where('is_primary', true)])
+            ->paginate(20)
+            ->withQueryString();
+
+        $categories = Category::where('is_active', true)->whereNull('parent_id')->orderBy('name')->get();
+        $brands = Brand::where('is_active', true)->orderBy('name')->get();
+
+        return view('storefront.shop', compact('products', 'categories', 'brands'));
+    }
+
+    public function category(Request $request, string $slug)
+    {
+        $category = Category::where('slug', $slug)->where('is_active', true)->firstOrFail();
+        $request->merge(['category_slug' => $slug]);
+
+        return $this->index($request)->with('currentCategory', $category);
+    }
+
+    public function product(string $slug)
+    {
+        $product = Product::where('slug', $slug)
+            ->where('is_active', true)
+            ->with(['category', 'brand', 'images', 'reviews.user:id,name', 'reviews' => fn ($q) => $q->latest()])
+            ->firstOrFail();
+
+        $related = Product::where('category_id', $product->category_id)
+            ->where('id', '!=', $product->id)
+            ->where('is_active', true)
+            ->with(['images' => fn ($q) => $q->where('is_primary', true)])
+            ->limit(8)
+            ->get();
+
+        return view('storefront.product-detail', compact('product', 'related'));
+    }
+}
