@@ -1,5 +1,7 @@
 <x-layouts.storefront title="Shopping Cart — CityMarket">
-    <h1 class="text-2xl font-bold text-ink-900 mb-6">🛒 Your Cart</h1>
+
+<div class="max-w-7xl mx-auto">
+    <h1 class="text-2xl font-bold text-ink-900 mb-6 flex items-center gap-2">🛒 Your Cart</h1>
 
     @if($cart->items->isEmpty())
         <div class="bg-white rounded-xl border border-ink-100 p-12 text-center">
@@ -15,19 +17,19 @@
             <!-- Items -->
             <div class="lg:col-span-2 space-y-3">
                 @foreach($cart->items as $item)
-                    <div class="bg-white rounded-xl border border-ink-100 p-4 flex gap-4">
-                        <div class="w-20 h-20 rounded-lg bg-ink-50 overflow-hidden shrink-0">
+                    <div class="bg-white rounded-xl border border-ink-100 p-4 flex gap-4 hover:shadow-md transition-shadow">
+                        <a href="{{ route('product', $item->product->slug) }}" class="w-20 h-20 rounded-lg bg-ink-50 overflow-hidden shrink-0">
                             @if($item->product->primary_image)
                                 <img src="{{ $item->product->primary_image }}" alt="{{ $item->product->name }}" class="w-full h-full object-cover">
                             @endif
-                        </div>
+                        </a>
                         <div class="flex-1 min-w-0">
                             <div class="flex items-start justify-between gap-2">
                                 <a href="{{ route('product', $item->product->slug) }}" class="text-sm font-medium text-ink-800 hover:text-brand-600 line-clamp-2">{{ $item->product->name }}</a>
                                 <form action="{{ route('cart.remove') }}" method="POST">
                                     @csrf
                                     <input type="hidden" name="product_id" value="{{ $item->product_id }}">
-                                    <button type="submit" class="text-ink-400 hover:text-red-500 p-1" title="Remove">
+                                    <button type="submit" class="text-ink-400 hover:text-rose-500 p-1 transition-colors" title="Remove">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
                                     </button>
                                 </form>
@@ -38,9 +40,9 @@
                                     @csrf
                                     <input type="hidden" name="product_id" value="{{ $item->product_id }}">
                                     <div class="flex items-center border border-ink-200 rounded-lg overflow-hidden">
-                                        <button type="button" onclick="var i=this.parentNode.querySelector('input'); i.value=Math.max(1,parseInt(i.value)-1); this.form.submit()" class="px-2 py-1 text-ink-600 hover:bg-ink-50">−</button>
+                                        <button type="button" onclick="var i=this.parentNode.querySelector('input'); i.value=Math.max(1,parseInt(i.value)-1); this.form.submit()" class="px-2 py-1 text-ink-600 hover:bg-ink-50 transition-colors">−</button>
                                         <input type="number" name="quantity" value="{{ $item->quantity }}" min="1" max="{{ $item->product->stock }}" class="w-10 text-center border-0 focus:ring-0 outline-none text-sm" onchange="this.form.submit()">
-                                        <button type="button" onclick="var i=this.parentNode.querySelector('input'); i.value=Math.min({{ $item->product->stock }},parseInt(i.value)+1); this.form.submit()" class="px-2 py-1 text-ink-600 hover:bg-ink-50">+</button>
+                                        <button type="button" onclick="var i=this.parentNode.querySelector('input'); i.value=Math.min({{ $item->product->stock }},parseInt(i.value)+1); this.form.submit()" class="px-2 py-1 text-ink-600 hover:bg-ink-50 transition-colors">+</button>
                                     </div>
                                 </form>
                                 <div class="text-right">
@@ -73,7 +75,10 @@
                             </span>
                         </div>
                         @if($cart->shipping > 0)
-                            <p class="text-xs text-ink-400">Add ₹{{ number_format(500 - $cart->subtotal) }} more for FREE delivery</p>
+                            <div class="flex items-start gap-1.5 text-xs text-brand-600 bg-brand-50 rounded-lg px-3 py-2 mt-2">
+                                <svg class="w-3.5 h-3.5 mt-0.5 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z"/></svg>
+                                <span>Add ₹{{ number_format(500 - $cart->subtotal) }} more for FREE delivery</span>
+                            </div>
                         @endif
                         <div class="border-t border-ink-100 pt-2 mt-2 flex justify-between">
                             <span class="font-bold text-ink-900">Total</span>
@@ -84,8 +89,14 @@
                     <a href="{{ route('checkout') }}" class="block bg-brand-600 text-white text-center font-semibold py-3 rounded-lg hover:bg-brand-700 transition-colors mt-4">
                         Proceed to Checkout →
                     </a>
+                    <div class="flex items-center justify-center gap-3 mt-3 text-xs text-ink-400">
+                        <span class="flex items-center gap-1">🔒 Secure</span>
+                        <span class="flex items-center gap-1">↩ Easy Returns</span>
+                    </div>
                 </div>
             </div>
         </div>
     @endif
+</div>
+
 </x-layouts.storefront>

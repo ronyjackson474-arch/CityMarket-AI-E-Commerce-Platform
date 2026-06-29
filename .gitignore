@@ -29,3 +29,10 @@ Thumbs.db
 # Tooling / capture artifacts
 /.playwright-mcp/
 /*.png
+
+# Screenshots / debug captures
+/*.jpeg
+/*.jpg
+
+# Credentials (never commit)
+/.drytis/cred.json

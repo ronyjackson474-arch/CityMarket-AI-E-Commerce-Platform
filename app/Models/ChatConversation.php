@@ -24,6 +24,8 @@ class ChatConversation extends Model
 
     public function messages(): HasMany
     {
-        return $this->hasMany(ChatMessage::class);
+        // Explicit foreign key — migration uses `conversation_id`, not the
+        // Eloquent-inferred `chat_conversation_id`.
+        return $this->hasMany(ChatMessage::class, 'conversation_id');
     }
 }

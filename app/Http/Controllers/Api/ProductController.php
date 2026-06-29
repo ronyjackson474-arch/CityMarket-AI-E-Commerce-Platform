@@ -54,7 +54,7 @@ class ProductController extends Controller
     {
         $products = Product::where('is_active', true)
             ->where('is_featured', true)
-            ->with(['images' => fn ($q) => $q->where('is_primary', true), 'category:id,name,slug'])
+            ->with(['images' => fn ($q) => $q->where('is_primary', true), 'category:id,name,slug', 'brand:id,name,slug'])
             ->limit(10)
             ->get();
 
@@ -65,7 +65,7 @@ class ProductController extends Controller
     {
         $products = Product::where('is_active', true)
             ->where('is_flash_deal', true)
-            ->with(['images' => fn ($q) => $q->where('is_primary', true), 'category:id,name,slug'])
+            ->with(['images' => fn ($q) => $q->where('is_primary', true), 'category:id,name,slug', 'brand:id,name,slug'])
             ->limit(10)
             ->get();
 

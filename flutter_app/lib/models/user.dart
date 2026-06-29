@@ -1,4 +1,10 @@
-/// CityMarket User & Auth Models
+/// CityMarket user, wallet & auth models — match the **real** API shapes.
+///
+/// Verified against `POST /api/auth/login` and `GET /api/auth/me`:
+/// ```
+/// {"message": "...", "data": {"user": {…}, "token": "1|…"}}
+/// {"data": {…user…}}
+/// ```
 
 class User {
   final int id;
@@ -6,68 +12,83 @@ class User {
   final String email;
   final String? phone;
   final String? avatar;
-  final String role; // 'customer' or 'admin'
-  final Wallet? wallet;
+  final String role;
+  final String? emailVerifiedAt;
+  final bool isActive;
 
-  User({
+  const User({
     required this.id,
     required this.name,
     required this.email,
     this.phone,
     this.avatar,
     this.role = 'customer',
-    this.wallet,
+    this.emailVerifiedAt,
+    this.isActive = true,
   });
 
   bool get isAdmin => role == 'admin';
 
   factory User.fromJson(Map<String, dynamic> json) {
     return User(
-      id: json['id'] as int,
-      name: json['name'] as String,
-      email: json['email'] as String,
+      id: _asInt(json['id']),
+      name: json['name'] as String? ?? '',
+      email: json['email'] as String? ?? '',
       phone: json['phone'] as String?,
       avatar: json['avatar'] as String?,
       role: json['role'] as String? ?? 'customer',
-      wallet: json['wallet'] != null
-          ? Wallet.fromJson(json['wallet'] as Map<String, dynamic>)
-          : null,
+      emailVerifiedAt: json['email_verified_at'] as String?,
+      isActive: json['is_active'] as bool? ?? true,
     );
   }
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'name': name,
+        'email': email,
+        'phone': phone,
+        'role': role,
+      };
 }
 
 class Wallet {
   final int id;
+  final int userId;
   final double balance;
   final String referralCode;
-  final int? referredBy;
+  final List<WalletTransaction> transactions;
 
-  Wallet({
+  const Wallet({
     required this.id,
+    required this.userId,
     required this.balance,
     required this.referralCode,
-    this.referredBy,
+    this.transactions = const [],
   });
 
   factory Wallet.fromJson(Map<String, dynamic> json) {
     return Wallet(
-      id: json['id'] as int,
-      balance: double.parse(json['balance'].toString()),
+      id: _asInt(json['id']),
+      userId: _asInt(json['user_id']),
+      balance: _asDouble(json['balance']),
       referralCode: json['referral_code'] as String? ?? '',
-      referredBy: json['referred_by'] as int?,
+      transactions: (json['transactions'] as List<dynamic>?)
+              ?.map((e) => WalletTransaction.fromJson(e as Map<String, dynamic>))
+              .toList() ??
+          [],
     );
   }
 }
 
 class WalletTransaction {
   final int id;
-  final String type; // 'credit' or 'debit'
+  final String type; // 'credit' | 'debit'
   final double amount;
   final String reason;
   final String? description;
   final DateTime createdAt;
 
-  WalletTransaction({
+  const WalletTransaction({
     required this.id,
     required this.type,
     required this.amount,
@@ -78,26 +99,57 @@ class WalletTransaction {
 
   factory WalletTransaction.fromJson(Map<String, dynamic> json) {
     return WalletTransaction(
-      id: json['id'] as int,
-      type: json['type'] as String,
-      amount: double.parse(json['amount'].toString()),
-      reason: json['reason'] as String,
+      id: _asInt(json['id']),
+      type: json['type'] as String? ?? 'credit',
+      amount: _asDouble(json['amount']),
+      reason: json['reason'] as String? ?? '',
       description: json['description'] as String?,
-      createdAt: DateTime.parse(json['created_at'] as String),
+      createdAt: DateTime.tryParse(json['created_at'] as String? ?? '') ??
+          DateTime.now(),
     );
   }
 }
 
+/// Login / Register response wrapper.
 class AuthResponse {
+  final String message;
   final String token;
   final User user;
 
-  AuthResponse({required this.token, required this.user});
+  const AuthResponse({
+    required this.message,
+    required this.token,
+    required this.user,
+  });
 
+  /// Parses `{"message": "...", "data": {"user": {…}, "token": "1|…"}}`.
   factory AuthResponse.fromJson(Map<String, dynamic> json) {
+    final data = (json['data'] as Map<String, dynamic>?) ?? json;
+    final token = data['token'] as String?;
+    if (token == null) {
+      throw const FormatException('Auth response missing token');
+    }
     return AuthResponse(
-      token: json['token'] as String,
-      user: User.fromJson(json['user'] as Map<String, dynamic>),
+      message: json['message'] as String? ?? '',
+      token: token,
+      user: User.fromJson(
+          (data['user'] as Map<String, dynamic>?) ?? <String, dynamic>{}),
     );
   }
+}
+
+// ── helpers ──────────────────────────────────────────────────────────
+int _asInt(dynamic v) {
+  if (v is int) return v;
+  if (v is num) return v.toInt();
+  if (v is String) return int.tryParse(v) ?? 0;
+  return 0;
+}
+
+double _asDouble(dynamic v) {
+  if (v is double) return v;
+  if (v is num) return v.toDouble();
+  if (v is String) return double.tryParse(v) ?? 0;
+  if (v == null) return 0;
+  return 0;
 }

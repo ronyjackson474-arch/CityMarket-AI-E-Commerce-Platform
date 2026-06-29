@@ -38,6 +38,7 @@ Route::get('/cart', [CartController::class, 'index'])->name('cart');
 Route::post('/cart/add', [CartController::class, 'add'])->name('cart.add');
 Route::post('/cart/update', [CartController::class, 'update'])->name('cart.update');
 Route::post('/cart/remove', [CartController::class, 'remove'])->name('cart.remove');
+Route::get('/cart/count', [CartController::class, 'count'])->name('cart.count');
 
 // Checkout (auth only for placing orders)
 Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout');
@@ -67,6 +68,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/wishlist', [WishlistController::class, 'index'])->name('wishlist');
     Route::post('/wishlist/add', [WishlistController::class, 'add'])->name('wishlist.add');
     Route::post('/wishlist/remove', [WishlistController::class, 'remove'])->name('wishlist.remove');
+    Route::post('/wishlist/toggle', [WishlistController::class, 'toggle'])->name('wishlist.toggle');
 
     // Reviews
     Route::post('/product/{slug}/review', [ReviewController::class, 'store'])->name('review.store');

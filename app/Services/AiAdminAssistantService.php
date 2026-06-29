@@ -18,7 +18,7 @@ class AiAdminAssistantService
 
     private function baseUrl(): string
     {
-        return config('services.openai.base_url') ?? env('OPENAI_BASE_URL', 'https://api.openai.com/v1');
+        return rtrim(config('services.openai.base_url') ?? env('OPENAI_BASE_URL', 'https://api.openai.com/v1'), '/');
     }
 
     private function model(): string

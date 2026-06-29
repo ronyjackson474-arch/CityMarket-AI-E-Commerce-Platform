@@ -19,6 +19,34 @@ class WishlistController extends Controller
         return view('storefront.wishlist', compact('products'));
     }
 
+    public function toggle(Request $request)
+    {
+        $validated = $request->validate([
+            'product_id' => ['required', 'exists:products,id'],
+        ]);
+
+        $user = Auth::user();
+        $exists = $user->wishlist()->where('product_id', $validated['product_id'])->exists();
+
+        if ($exists) {
+            $user->wishlist()->detach($validated['product_id']);
+
+            return response()->json([
+                'action' => 'removed',
+                'wishlisted' => false,
+                'count' => $user->wishlist()->count(),
+            ]);
+        }
+
+        $user->wishlist()->syncWithoutDetaching([$validated['product_id']]);
+
+        return response()->json([
+            'action' => 'added',
+            'wishlisted' => true,
+            'count' => $user->wishlist()->count(),
+        ]);
+    }
+
     public function add(Request $request)
     {
         $validated = $request->validate([

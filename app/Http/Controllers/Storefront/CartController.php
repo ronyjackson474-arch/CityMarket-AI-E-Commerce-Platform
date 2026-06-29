@@ -33,7 +33,9 @@ class CartController extends Controller
         $qty = (int) ($data['quantity'] ?? 1);
 
         if ($product->stock < $qty) {
-            return back()->with('error', "Only {$product->stock} units in stock.");
+            return $this->ajaxOrRedirect($request, false, "Only {$product->stock} units in stock.", [
+                'cart_count' => $this->getCartCount($request),
+            ]);
         }
 
         $cart = $this->getCart($request);
@@ -41,14 +43,18 @@ class CartController extends Controller
 
         if ($item) {
             if ($item->quantity + $qty > $product->stock) {
-                return back()->with('error', 'Cannot add more — stock limit reached.');
+                return $this->ajaxOrRedirect($request, false, 'Cannot add more — stock limit reached.', [
+                    'cart_count' => $cart->items()->sum('quantity'),
+                ]);
             }
             $item->increment('quantity', $qty);
         } else {
             $cart->items()->create(['product_id' => $product->id, 'quantity' => $qty]);
         }
 
-        return redirect()->route('cart')->with('success', "{$product->name} added to cart.");
+        return $this->ajaxOrRedirect($request, true, "{$product->name} added to cart.", [
+            'cart_count' => $cart->items()->sum('quantity'),
+        ]);
     }
 
     public function update(Request $request)
@@ -84,6 +90,35 @@ class CartController extends Controller
         $cart->items()->where('product_id', $data['product_id'])->delete();
 
         return back()->with('success', 'Item removed.');
+    }
+
+    public function count(Request $request)
+    {
+        $cart = $this->getCart($request);
+        $count = $cart->items()->sum('quantity');
+
+        return response()->json(['count' => $count]);
+    }
+
+    protected function getCartCount(Request $request): int
+    {
+        return $this->getCart($request)->items()->sum('quantity');
+    }
+
+    protected function ajaxOrRedirect(Request $request, bool $success, string $message, array $extra = [])
+    {
+        if ($request->expectsJson()) {
+            return response()->json(array_merge([
+                'success' => $success,
+                'message' => $message,
+            ], $extra));
+        }
+
+        if ($success) {
+            return redirect()->route('cart')->with('success', $message);
+        }
+
+        return back()->with('error', $message);
     }
 
     protected function getCart(Request $request)

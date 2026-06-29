@@ -7,6 +7,7 @@ use App\Models\Brand;
 use App\Models\Category;
 use App\Models\Product;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 
 class ShopController extends Controller
 {
@@ -24,6 +25,7 @@ class ShopController extends Controller
             ->paginate(20)
             ->withQueryString();
 
+        // Filter sidebar data — lightweight queries, no caching needed.
         $categories = Category::where('is_active', true)->whereNull('parent_id')->orderBy('name')->get();
         $brands = Brand::where('is_active', true)->orderBy('name')->get();
 
@@ -42,15 +44,24 @@ class ShopController extends Controller
     {
         $product = Product::where('slug', $slug)
             ->where('is_active', true)
-            ->with(['category', 'brand', 'images', 'reviews.user:id,name', 'reviews' => fn ($q) => $q->latest()])
+            ->with(['category', 'brand', 'images', 'reviews.user:id,name', 'reviews' => fn ($q) => $q->latest()->limit(5)])
             ->firstOrFail();
 
         $related = Product::where('category_id', $product->category_id)
             ->where('id', '!=', $product->id)
             ->where('is_active', true)
-            ->with(['images' => fn ($q) => $q->where('is_primary', true)])
+            ->with(['category:id,name,slug', 'brand:id,name,slug', 'images' => fn ($q) => $q->where('is_primary', true)])
+            ->inRandomOrder()
             ->limit(8)
             ->get();
+
+        // Record the view for recommendations (fire-and-forget).
+        if (auth()->check()) {
+            \App\Models\ProductView::create([
+                'user_id' => auth()->id(),
+                'product_id' => $product->id,
+            ]);
+        }
 
         return view('storefront.product-detail', compact('product', 'related'));
     }

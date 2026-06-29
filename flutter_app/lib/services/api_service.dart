@@ -1,78 +1,111 @@
-/// CityMarket API Service
-/// Handles all REST API communication with the Laravel backend
+/// CityMarket API service — HTTP layer for the Laravel REST backend.
 ///
-/// Usage:
-/// ```dart
-/// final api = ApiService();
-/// await api.login('user@example.com', 'password');
-/// final products = await api.getProducts();
-/// ```
+/// All endpoints auto-unwrap the standard `{"data": ...}` envelope (or
+/// `{"message": ..., "data": ...}` for mutations) and throw typed
+/// [ApiException] / [ValidationException] for non-2xx responses.
+/// The bearer token is stored in-memory and mirrored to SharedPreferences
+/// by the caller (StorageService).
+library;
 
 import 'dart:convert';
-import 'package:http/http.dart as http;
+import 'package:http/http.dart' as http;
+
+import '../constants/app_constants.dart';
 
 class ApiService {
-  // Configure this for your environment
-  // In production, load from environment or app config
-  static String baseUrl = 'https://your-domain.com/api';
-
-  /// Set the base URL for your CityMarket deployment
-  static void configure(String url) {
-    baseUrl = url.endsWith('/api') ? url : '${url}/api';
-  }
+  ApiService();
 
   String? _token;
 
-  void setToken(String token) {
-    _token = token;
-  }
-
+  /// Current bearer token (null when logged out).
   String? get token => _token;
 
-  bool get isAuthenticated => _token != null;
+  bool get isAuthenticated => _token != null && _token!.isNotEmpty;
+
+  void setToken(String? token) => _token = token;
+
+  void clearToken() => _token = null;
 
   Map<String, String> get _headers => {
         'Content-Type': 'application/json',
         'Accept': 'application/json',
-        if (_token != null) 'Authorization': 'Bearer $_token',
+        if (_token != null && _token!.isNotEmpty)
+          'Authorization': 'Bearer $_token',
       };
 
+  Uri _uri(String endpoint, [Map<String, String>? qp]) {
+    final base = '${AppConstants.apiBaseUrl}$endpoint';
+    final parsed = Uri.parse(base);
+    if (qp == null || qp.isEmpty) return parsed;
+    // Merge any existing query params in the endpoint path.
+    return parsed.replace(queryParameters: {
+      ...parsed.queryParameters,
+      ...qp.map((k, v) => MapEntry(k, v)),
+    });
+  }
+
+  /// Core request method. Returns the parsed JSON body.
   Future<Map<String, dynamic>> _request(
     String method,
     String endpoint, {
     Map<String, dynamic>? body,
     Map<String, String>? queryParams,
   }) async {
-    final uri = Uri.parse('$baseUrl$endpoint')
-        .replace(queryParameters: queryParams);
+    final req = http.Request(method, _uri(endpoint, queryParams))
+      ..headers.addAll(_headers);
+    if (body != null) {
+      req.body = jsonEncode(body);
+    }
 
-    final response = await http.send(http.Request(method, uri)
-      ..headers.addAll(_headers)
-      ..body = body != null ? jsonEncode(body) : '');
+    http.StreamedResponse response;
+    try {
+      response = await http.Client().send(req);
+    } catch (e) {
+      throw ApiException('Network error: ${e.toString()}', 0);
+    }
 
     final responseBody = await response.stream.bytesToString();
 
     if (response.statusCode >= 200 && response.statusCode < 300) {
+      if (responseBody.isEmpty) return {};
       return jsonDecode(responseBody) as Map<String, dynamic>;
-    } else if (response.statusCode == 401) {
-      throw ApiException('Unauthorized', 401);
+    }
+
+    // Error handling — try to surface the server's message.
+    String serverMessage = 'Request failed (${response.statusCode})';
+    Map<String, dynamic>? errors;
+    try {
+      if (responseBody.isNotEmpty) {
+        final decoded = jsonDecode(responseBody);
+        if (decoded is Map<String, dynamic>) {
+          serverMessage = decoded['message'] as String? ?? serverMessage;
+          errors = decoded['errors'] as Map<String, dynamic>?;
+        }
+      }
+    } catch (_) {}
+
+    if (response.statusCode == 401) {
+      throw ApiException(serverMessage, 401);
     } else if (response.statusCode == 422) {
-      final errors = jsonDecode(responseBody);
-      throw ValidationException(errors['message'] ?? 'Validation error', errors['errors'] ?? {});
+      throw ValidationException(serverMessage, errors ?? {});
+    } else if (response.statusCode == 404) {
+      throw ApiException('Not found', 404);
     } else {
-      throw ApiException('Request failed: ${response.statusCode}', response.statusCode);
+      throw ApiException(serverMessage, response.statusCode);
     }
   }
 
-  // ===== Auth =====
+  // ── Auth ──────────────────────────────────────────────────────────
 
   Future<Map<String, dynamic>> login(String email, String password) async {
-    final result = await _request('POST', '/auth/login', body: {
+    final res = await _request('POST', '/auth/login', body: {
       'email': email,
       'password': password,
     });
-    _token = result['token'] as String;
-    return result;
+    final data = res['data'] as Map<String, dynamic>? ?? res;
+    final token = data['token'] as String?;
+    if (token != null) _token = token;
+    return res;
   }
 
   Future<Map<String, dynamic>> register(
@@ -81,29 +114,43 @@ class ApiService {
     String password, {
     String? phone,
   }) async {
-    final result = await _request('POST', '/auth/register', body: {
+    final res = await _request('POST', '/auth/register', body: {
       'name': name,
       'email': email,
       'password': password,
       'password_confirmation': password,
-      if (phone != null) 'phone': phone,
+      if (phone != null && phone.isNotEmpty) 'phone': phone,
     });
-    _token = result['token'] as String;
-    return result;
+    final data = res['data'] as Map<String, dynamic>? ?? res;
+    final token = data['token'] as String?;
+    if (token != null) _token = token;
+    return res;
   }
 
   Future<void> logout() async {
-    await _request('POST', '/auth/logout');
-    _token = null;
+    try {
+      await _request('POST', '/auth/logout');
+    } finally {
+      _token = null;
+    }
   }
 
   Future<Map<String, dynamic>> me() => _request('GET', '/auth/me');
 
-  // ===== Categories =====
+  /// Update the authenticated user's profile (name, phone). Hits the
+  /// Sanctum profile-update endpoint.
+  Future<Map<String, dynamic>> updateProfile(
+          {String? name, String? phone}) =>
+      _request('PUT', '/auth/profile', body: {
+        if (name != null) 'name': name,
+        if (phone != null) 'phone': phone,
+      });
+
+  // ── Categories ────────────────────────────────────────────────────
 
   Future<Map<String, dynamic>> getCategories() => _request('GET', '/categories');
 
-  // ===== Products =====
+  // ── Products ──────────────────────────────────────────────────────
 
   Future<Map<String, dynamic>> getProducts({
     int? category,
@@ -123,15 +170,16 @@ class ApiService {
       'page': page.toString(),
     };
     if (category != null) params['category'] = category.toString();
-    if (categorySlug != null) params['category_slug'] = categorySlug;
+    if (categorySlug != null && categorySlug.isNotEmpty) {
+      params['category_slug'] = categorySlug;
+    }
     if (brand != null) params['brand'] = brand.toString();
     if (priceMin != null) params['price_min'] = priceMin.toString();
     if (priceMax != null) params['price_max'] = priceMax.toString();
     if (minRating != null) params['min_rating'] = minRating.toString();
-    if (search != null) params['search'] = search;
-    if (sort != null) params['sort'] = sort;
+    if (search != null && search.isNotEmpty) params['search'] = search;
+    if (sort != null && sort.isNotEmpty) params['sort'] = sort;
     if (onSale != null && onSale) params['on_sale'] = '1';
-
     return _request('GET', '/products', queryParams: params);
   }
 
@@ -144,7 +192,11 @@ class ApiService {
   Future<Map<String, dynamic>> getProduct(String slug) =>
       _request('GET', '/products/$slug');
 
-  // ===== Cart =====
+  Future<Map<String, dynamic>> getRecommendations({int limit = 10}) =>
+      _request('GET', '/recommendations',
+          queryParams: {'limit': limit.toString()});
+
+  // ── Cart ──────────────────────────────────────────────────────────
 
   Future<Map<String, dynamic>> getCart() => _request('GET', '/cart');
 
@@ -165,9 +217,10 @@ class ApiService {
 
   Future<void> clearCart() => _request('POST', '/cart/clear');
 
-  // ===== Orders =====
+  // ── Orders ────────────────────────────────────────────────────────
 
-  Future<Map<String, dynamic>> getOrders() => _request('GET', '/orders');
+  Future<Map<String, dynamic>> getOrders({int page = 1}) =>
+      _request('GET', '/orders', queryParams: {'page': page.toString()});
 
   Future<Map<String, dynamic>> getOrder(String orderNumber) =>
       _request('GET', '/orders/$orderNumber');
@@ -180,22 +233,22 @@ class ApiService {
       _request('POST', '/orders', body: {
         'shipping_address': shippingAddress,
         'payment_method': paymentMethod,
-        if (couponCode != null) 'coupon_code': couponCode,
+        if (couponCode != null && couponCode.isNotEmpty)
+          'coupon_code': couponCode,
       });
 
-  Future<Map<String, dynamic>> cancelOrder(String orderNumber) =>
+  Future<void> cancelOrder(String orderNumber) =>
       _request('POST', '/orders/$orderNumber/cancel');
 
-  Future<Map<String, dynamic>> requestReturn(
-          String orderNumber, String reason, {String? description}) =>
-      _request('POST', '/orders/$orderNumber/return', body: {
-        'reason': reason,
-        if (description != null) 'description': description,
-      });
+  Future<void> requestReturn(String orderNumber, String reason,
+          {String? description}) =>
+      _request('POST', '/orders/$orderNumber/return',
+          body: {'reason': reason, if (description != null) 'description': description});
 
-  // ===== Wishlist =====
+  // ── Wishlist ──────────────────────────────────────────────────────
 
-  Future<Map<String, dynamic>> getWishlist() => _request('GET', '/wishlist');
+  Future<Map<String, dynamic>> getWishlist({int page = 1}) =>
+      _request('GET', '/wishlist', queryParams: {'page': page.toString()});
 
   Future<Map<String, dynamic>> addToWishlist(int productId) =>
       _request('POST', '/wishlist/add', body: {'product_id': productId});
@@ -203,44 +256,53 @@ class ApiService {
   Future<Map<String, dynamic>> removeFromWishlist(int productId) =>
       _request('POST', '/wishlist/remove', body: {'product_id': productId});
 
-  // ===== Reviews =====
+  // ── Reviews ───────────────────────────────────────────────────────
 
-  Future<Map<String, dynamic>> getProductReviews(String slug) =>
-      _request('GET', '/products/$slug/reviews');
+  Future<Map<String, dynamic>> getProductReviews(String slug,
+          {int page = 1}) =>
+      _request('GET', '/products/$slug/reviews',
+          queryParams: {'page': page.toString()});
 
-  Future<Map<String, dynamic>> postReview(
-          String slug, int rating, {String? title, String? body}) =>
-      _request('POST', '/products/$slug/reviews',
-          body: {'rating': rating, if (title != null) 'title': title, if (body != null) 'body': body});
+  Future<Map<String, dynamic>> postReview(String slug, int rating,
+          {String? title, String? body}) =>
+      _request('POST', '/products/$slug/reviews', body: {
+        'rating': rating,
+        if (title != null) 'title': title,
+        if (body != null) 'body': body,
+      });
 
-  // ===== Addresses =====
+  // ── Addresses ─────────────────────────────────────────────────────
 
   Future<Map<String, dynamic>> getAddresses() => _request('GET', '/addresses');
 
   Future<Map<String, dynamic>> addAddress(Map<String, dynamic> address) =>
       _request('POST', '/addresses', body: address);
 
-  Future<Map<String, dynamic>> updateAddress(int id, Map<String, dynamic> address) =>
+  Future<Map<String, dynamic>> updateAddress(
+          int id, Map<String, dynamic> address) =>
       _request('PUT', '/addresses/$id', body: address);
 
   Future<void> deleteAddress(int id) => _request('DELETE', '/addresses/$id');
 
-  // ===== Wallet =====
+  // ── Wallet ────────────────────────────────────────────────────────
 
   Future<Map<String, dynamic>> getWallet() => _request('GET', '/wallet');
 
-  Future<Map<String, dynamic>> getWalletTransactions() =>
-      _request('GET', '/wallet/transactions');
+  Future<Map<String, dynamic>> getWalletTransactions({int page = 1}) =>
+      _request('GET', '/wallet/transactions',
+          queryParams: {'page': page.toString()});
 
   Future<Map<String, dynamic>> applyReferral(String code) =>
       _request('POST', '/referrals/apply', body: {'referral_code': code});
 
-  // ===== AI Features =====
+  // ── AI ────────────────────────────────────────────────────────────
 
+  /// Public (no auth) natural-language search.
   Future<Map<String, dynamic>> aiSearch(String query) =>
       _request('POST', '/ai/search', body: {'query': query});
 
-  Future<Map<String, dynamic>> chatSend(String message, {int? conversationId}) =>
+  Future<Map<String, dynamic>> chatSend(String message,
+          {int? conversationId}) =>
       _request('POST', '/chat/send', body: {
         'message': message,
         if (conversationId != null) 'conversation_id': conversationId,
@@ -248,19 +310,14 @@ class ApiService {
 
   Future<Map<String, dynamic>> getConversations() =>
       _request('GET', '/chat/conversations');
-
-  Future<Map<String, dynamic>> getRecommendations({int limit = 10}) =>
-      _request('GET', '/recommendations', queryParams: {'limit': limit.toString()});
 }
 
-// ===== Exceptions =====
+// ── Exceptions ───────────────────────────────────────────────────────
 
 class ApiException implements Exception {
   final String message;
   final int statusCode;
-
-  ApiException(this.message, this.statusCode);
-
+  const ApiException(this.message, this.statusCode);
   @override
   String toString() => message;
 }
@@ -268,9 +325,17 @@ class ApiException implements Exception {
 class ValidationException implements Exception {
   final String message;
   final Map<String, dynamic> errors;
+  const ValidationException(this.message, this.errors);
 
-  ValidationException(this.message, this.errors);
+  /// Flatten validation errors into a single human-readable string.
+  String get flatErrors {
+    if (errors.isEmpty) return message;
+    return errors.values
+        .expand((e) => e is List ? e : [e])
+        .map((e) => e.toString())
+        .join('\n');
+  }
 
   @override
-  String toString() => message;
+  String toString() => flatErrors;
 }

@@ -1,60 +1,106 @@
-# CityMarket Flutter App — Scaffold
+# CityMarket — Flutter App
 
-This directory contains the scaffold code for the CityMarket Flutter mobile app.
-It provides Dart model classes and an API service that connects to the Laravel REST API.
+AI-powered e-commerce shopping app for Android & iOS, built with Flutter and
+the CityMarket Laravel REST API.
 
-## What's Included
+## Features
 
-- `lib/models/` — Complete Dart data models (Product, User, Order, Cart, etc.)
-- `lib/services/api_service.dart` — Full REST API client with all endpoints
-- `API_DOCS.md` — Comprehensive REST API documentation
+- **Auth** — Login, Register, logout, persistent sessions (SharedPreferences).
+- **Home** — Greeting, search bar, category strip, flash deals with live
+  countdown timers, featured grid, AI recommendations.
+- **Catalog** — Category tree browse, product listing with filters (price,
+  rating, on-sale) + sort (newest, price, rating) + infinite scroll.
+- **Product Detail** — Image carousel, discount badge, specs, description,
+  reviews preview, add-to-cart, wishlist toggle, share.
+- **Reviews** — Full review list + write-a-review with star picker.
+- **Cart** — Line items, quantity stepper, swipe-to-remove, totals, checkout.
+- **Checkout** — Address select/add inline, payment method, coupon code,
+  order summary, place order.
+- **Orders** — Order list, order detail with status timeline, cancel, return.
+- **Wishlist** — Grid of saved products with remove.
+- **Account** — Profile card, edit profile, orders, wallet, addresses, about,
+  logout. Guest mode with sign-in CTA.
+- **Addresses** — List, add, edit, delete, set default.
+- **Wallet** — Balance card, referral code apply, transaction history.
+- **AI Search** — Natural-language product search with AI interpretation
+  display (keywords, category, price range).
+- **AI Chat Assistant** — Conversational shopping assistant with quick prompts.
+
+## Tech Stack
+
+- **Flutter** ≥ 3.10 / Dart ≥ 3.0
+- **State**: Provider + ChangeNotifier
+- **HTTP**: `http` package
+- **Images**: `cached_network_image`
+- **Fonts**: Google Fonts (Poppins)
+- **Formatting**: `intl` (Indian Rupee currency)
+- **Animations**: `flutter_staggered_animations`, `smooth_page_indicator`
 
 ## Getting Started
 
-1. Install Flutter SDK (>= 3.0)
-2. Create a new Flutter project and copy these files into it
-3. Add the `http` package to `pubspec.yaml`:
-   ```yaml
-   dependencies:
-     http: ^1.2.0
-   ```
-4. Update the base URL in `lib/services/api_service.dart`
-5. Use the API service:
-   ```dart
-   final api = ApiService();
-   await api.login('email', 'password');
-   final products = await api.getProducts(search: 'shoes');
-   ```
+```bash
+cd flutter_app
+flutter pub get
+flutter run
+```
 
-## API Endpoints Summary
+> The app connects to the CityMarket REST API at
+> `https://citymarket-ai-e-comm-2sb7p3.drytis.dev/api` (configured in
+> `lib/constants/app_constants.dart`).
+>
+> **Demo account:** `customer@citymarket.test` / `password` (tap "Use demo
+> account" on the login screen).
 
-| Method | Endpoint | Auth | Description |
-|--------|----------|------|-------------|
-| POST | /auth/register | No | Register new user |
-| POST | /auth/login | No | Login |
-| GET | /categories | No | Category tree |
-| GET | /products | No | Product listing with filters |
-| GET | /products/{slug} | No | Product detail |
-| GET/POST | /cart | Yes | Cart operations |
-| GET/POST | /orders | Yes | Order operations |
-| GET/POST | /wishlist | Yes | Wishlist |
-| GET/POST | /products/{slug}/reviews | Mixed | Product reviews |
-| GET/POST/PUT/DELETE | /addresses | Yes | Address management |
-| GET | /wallet | Yes | Wallet & transactions |
-| POST | /ai/search | No | AI-powered search |
-| POST | /chat/send | Yes | AI chat assistant |
-| GET | /recommendations | Yes | AI recommendations |
-| POST | /admin/ai/query | Admin | AI admin assistant |
+## Project Structure
 
-## Features Supported
+```
+lib/
+├── main.dart                    # App entry, providers, theme
+├── constants/app_constants.dart # API base URL, config
+├── theme/app_theme.dart         # Material 3 theme, colors, gradients
+├── models/                      # Data models (JSON → Dart)
+│   ├── ai.dart                  # AI search + chat models
+│   ├── order.dart              # Cart, Order, Address, Review
+│   ├── paginated.dart          # Generic Laravel pagination parser
+│   ├── product.dart            # Product, Category, Brand, ProductImage
+│   └── user.dart               # User, Wallet, AuthResponse
+├── services/
+│   ├── api_service.dart         # HTTP client, all endpoints
+│   └── storage_service.dart     # SharedPreferences token mgmt
+├── providers/app_provider.dart  # Global state (auth, cart/wishlist counts)
+├── utils/
+│   ├── auth_guard.dart          # Login-gate for protected actions
+│   ├── format.dart             # Currency / date helpers
+│   └── nav.dart                # Named navigation helpers
+├── widgets/                     # Shared UI components
+│   ├── app_network_image.dart
+│   ├── buttons.dart            # GradientButton, SectionHeader, QuantityStepper
+│   ├── product_card.dart       # ProductCard, ProductGrid
+│   ├── rating_stars.dart
+│   ├── shimmer.dart
+│   └── states.dart             # EmptyState, ErrorState, LoadingOverlay
+└── screens/                     # All app screens (22 total)
+    ├── main_shell.dart          # Bottom navigation host
+    ├── auth/                   # Splash, Login, Register
+    ├── home/                   # Home + home widgets
+    ├── catalog/                # Categories, Category Products
+    ├── product/                # Product Detail, Reviews
+    ├── cart/                   # Cart, Checkout, Order Placed
+    ├── order/                  # Orders, Order Detail
+    ├── wishlist/               # Wishlist
+    ├── account/                # Account, Addresses, Wallet, Edit Profile, About
+    └── ai/                     # AI Search, AI Chat
+```
 
-- ✅ Product browsing (search, filter, sort)
-- ✅ Shopping cart
-- ✅ Checkout (COD/UPI/Card/Wallet)
-- ✅ Order management & tracking
-- ✅ Wishlist
-- ✅ Reviews & ratings
-- ✅ Address management
-- ✅ Wallet & referrals
-- ✅ AI search & chat assistant
-- ✅ AI recommendations
+## API Integration
+
+All API response parsing matches the **verified** shapes from the live Laravel
+backend:
+
+- Auth responses unwrap `data.token` (not top-level).
+- Products unwrap from `data` array in pagination envelope.
+- Cart parses `data` (items with nested `product`) + separate top-level
+  `summary` (item_count, subtotal, shipping, total).
+- Wishlist returns paginated products with `pivot`.
+- Prices/ratings are strings (`"129999.00"`, `"4.7"`) — parsed to `double`.
+- Specifications arrive as a JSON-encoded string — decoded to `Map`.

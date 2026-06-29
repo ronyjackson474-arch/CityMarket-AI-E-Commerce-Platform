@@ -16,7 +16,7 @@ class AiAssistantService
 
     private function baseUrl(): string
     {
-        return config('services.openai.base_url') ?? env('OPENAI_BASE_URL', 'https://api.openai.com/v1');
+        return rtrim(config('services.openai.base_url') ?? env('OPENAI_BASE_URL', 'https://api.openai.com/v1'), '/');
     }
 
     private function model(): string
@@ -149,10 +149,12 @@ PROMPT;
             return "We accept Cash on Delivery (COD), UPI, Credit/Debit Cards, and CityMarket Wallet. Choose what's convenient for you at checkout!";
         }
 
-        // Keyword-based product suggestions
+        // Keyword-based product suggestions (grouped OR so active() scope holds)
         $suggestions = Product::active()
-            ->where('name', 'like', "%{$userMessage}%")
-            ->orWhere('description', 'like', "%{$userMessage}%")
+            ->where(function ($q) use ($userMessage) {
+                $q->where('name', 'like', "%{$userMessage}%")
+                  ->orWhere('description', 'like', "%{$userMessage}%");
+            })
             ->limit(3)
             ->get(['name', 'sale_price', 'price']);
 
