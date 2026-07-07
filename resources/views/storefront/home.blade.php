@@ -21,14 +21,19 @@
                      x-transition:leave-start="opacity-100"
                      x-transition:leave-end="opacity-0"
                      class="absolute inset-0 preserve-3d">
-                    <div class="absolute inset-0 animate-gradient" :style="`background: linear-gradient(135deg, ${slide.bgFrom}, ${slide.bgTo}); background-size: 200% 200%;`"></div>
-                    <!-- Big floating emoji with 3D depth -->
-                    <div class="absolute right-0 top-0 bottom-0 w-1/2 hidden md:flex items-center justify-center text-9xl opacity-30 animate-float" style="transform: translateZ(60px)" x-text="slide.emoji"></div>
+                    <!-- Background image -->
+                    <div class="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-105" :style="`background-image: url('${slide.image}');`"></div>
+                    <!-- Gradient overlay -->
+                    <div class="absolute inset-0 animate-gradient" :style="`background: ${slide.overlay}; background-size: 200% 200%;`"></div>
+                    <!-- Decorative floating rings -->
+                    <div class="absolute right-8 top-8 w-32 h-32 rounded-full border-4 border-white/10 animate-spin-slow" style="transform: translateZ(30px)"></div>
+                    <div class="absolute right-20 bottom-12 w-16 h-16 rounded-full bg-white/10 backdrop-blur-sm animate-float" style="transform: translateZ(50px)"></div>
+                    <!-- Content with 3D depth -->
                     <div class="relative z-10 h-full flex flex-col justify-center p-8 md:p-12 max-w-lg" style="transform: translateZ(40px)">
-                        <span class="inline-block self-start bg-white/20 backdrop-blur text-white text-xs font-bold px-3 py-1.5 rounded-full mb-4 uppercase tracking-wider animate-bounce-in" x-text="slide.badge"></span>
-                        <h2 class="text-3xl md:text-5xl font-bold text-white mb-3 leading-tight" x-text="slide.title"></h2>
-                        <p class="text-base md:text-lg text-white/80 mb-6" x-text="slide.subtitle"></p>
-                        <a :href="slide.link" class="inline-flex items-center gap-2 self-start bg-white text-ink-900 text-sm font-bold px-6 py-3 rounded-xl hover:bg-white/90 transition-all shadow-lg btn-shine sweep-shine magnetic-btn">
+                        <span class="inline-block self-start bg-white/25 backdrop-blur text-white text-xs font-bold px-4 py-1.5 rounded-full mb-4 uppercase tracking-wider animate-bounce-in" x-text="slide.badge"></span>
+                        <h2 class="text-3xl md:text-5xl font-bold text-white mb-3 leading-tight drop-shadow-lg" x-text="slide.title"></h2>
+                        <p class="text-base md:text-lg text-white/90 mb-6 drop-shadow" x-text="slide.subtitle"></p>
+                        <a :href="slide.link" class="inline-flex items-center gap-2 self-start bg-white text-ink-900 text-sm font-bold px-6 py-3 rounded-xl hover:bg-white/90 hover:scale-105 transition-all shadow-2xl btn-shine sweep-shine magnetic-btn">
                             <span x-text="slide.cta"></span>
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
                         </a>
@@ -58,34 +63,36 @@
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4 perspective-1000">
             <!-- Banner 1: Fashion Sale — large left card -->
             <div class="md:col-span-2 md:row-span-2 relative rounded-2xl overflow-hidden group cursor-pointer min-h-[200px] md:min-h-[320px] sweep-shine" onclick="window.location='{{ route('category', 'fashion') }}'">
-                <div class="absolute inset-0 bg-gradient-to-br from-rose-500 via-pink-500 to-purple-600 animate-gradient" style="background-size: 200% 200%;"></div>
-                <div class="absolute right-0 top-0 bottom-0 w-1/2 flex items-center justify-center">
-                    <span class="text-[120px] md:text-[180px] opacity-10 group-hover:opacity-25 group-hover:scale-125 transition-all duration-700 select-none animate-float">👗</span>
-                </div>
-                <div class="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent"></div>
+                <!-- Background image -->
+                <div class="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-110" style="background-image: url('https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=800&h=600&fit=crop');"></div>
+                <!-- Gradient overlay -->
+                <div class="absolute inset-0 bg-gradient-to-br from-rose-500/80 via-pink-500/60 to-purple-600/50 animate-gradient" style="background-size: 200% 200%;"></div>
+                <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
+                <!-- Decorative shapes -->
+                <div class="absolute -top-8 -left-8 w-32 h-32 rounded-full border-4 border-white/10 animate-spin-slow"></div>
+                <div class="absolute -bottom-4 right-12 w-20 h-20 rounded-full bg-white/10 backdrop-blur-sm group-hover:scale-150 transition-transform duration-700 animate-float"></div>
+                <div class="absolute top-8 right-8 w-3 h-3 rounded-full bg-white/60 animate-pulse"></div>
                 <div class="relative z-10 h-full flex flex-col justify-end p-6 md:p-8">
-                    <span class="inline-block self-start bg-white/25 backdrop-blur text-white text-[11px] font-bold px-3 py-1 rounded-full mb-3 uppercase tracking-widest">Limited Time</span>
-                    <h2 class="text-2xl md:text-4xl font-extrabold text-white mb-1 leading-tight">Fashion Fiesta</h2>
-                    <p class="text-sm md:text-base text-white/85 mb-4">Flat 50% OFF on top brands · Style that speaks</p>
+                    <span class="inline-block self-start bg-white/25 backdrop-blur text-white text-[11px] font-bold px-3 py-1 rounded-full mb-3 uppercase tracking-widest animate-bounce-in">Limited Time</span>
+                    <h2 class="text-2xl md:text-4xl font-extrabold text-white mb-1 leading-tight drop-shadow-lg">Fashion Fiesta</h2>
+                    <p class="text-sm md:text-base text-white/90 mb-4 drop-shadow">Flat 50% OFF on top brands · Style that speaks</p>
                     <span class="inline-flex items-center gap-2 self-start bg-white text-ink-900 text-sm font-bold px-5 py-2.5 rounded-xl group-hover:gap-3 transition-all shadow-lg btn-shine magnetic-btn">
                         Shop Fashion
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
                     </span>
                 </div>
-                <!-- Decorative floating circles -->
-                <div class="absolute -top-8 -left-8 w-32 h-32 rounded-full bg-white/10 animate-morph"></div>
-                <div class="absolute -bottom-4 right-12 w-20 h-20 rounded-full bg-white/5 group-hover:scale-125 transition-transform duration-700 animate-float"></div>
             </div>
 
             <!-- Banner 2: Beauty Bonanza — top right -->
             <div class="relative rounded-2xl overflow-hidden group cursor-pointer min-h-[150px] sweep-shine" onclick="window.location='{{ route('category', 'beauty') }}'">
-                <div class="absolute inset-0 bg-gradient-to-br from-violet-600 to-indigo-700 animate-gradient" style="background-size: 200% 200%;"></div>
-                <div class="absolute right-2 top-2 text-6xl opacity-15 group-hover:opacity-30 group-hover:scale-125 transition-all duration-500 select-none animate-float-slow">💄</div>
+                <div class="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-110" style="background-image: url('https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=600&h=300&fit=crop');"></div>
+                <div class="absolute inset-0 bg-gradient-to-br from-violet-600/80 to-indigo-700/70"></div>
+                <div class="absolute top-3 right-3 w-12 h-12 rounded-full border-2 border-white/20 animate-spin-slow"></div>
                 <div class="relative z-10 h-full flex flex-col justify-center p-5 md:p-6">
-                    <span class="inline-block self-start bg-white/20 backdrop-blur text-white text-[10px] font-bold px-2.5 py-1 rounded-full mb-2 uppercase tracking-widest">Exclusive</span>
-                    <h3 class="text-lg md:text-xl font-extrabold text-white mb-0.5">Beauty Bonanza</h3>
-                    <p class="text-xs md:text-sm text-white/80 mb-3">Up to 40% OFF premium skincare</p>
-                    <span class="inline-flex items-center gap-1.5 self-start bg-white/20 backdrop-blur text-white text-xs font-bold px-4 py-2 rounded-lg group-hover:bg-white/40 transition-colors">
+                    <span class="inline-block self-start bg-white/25 backdrop-blur text-white text-[10px] font-bold px-2.5 py-1 rounded-full mb-2 uppercase tracking-widest">Exclusive</span>
+                    <h3 class="text-lg md:text-xl font-extrabold text-white mb-0.5 drop-shadow">Beauty Bonanza</h3>
+                    <p class="text-xs md:text-sm text-white/90 mb-3">Up to 40% OFF premium skincare</p>
+                    <span class="inline-flex items-center gap-1.5 self-start bg-white/25 backdrop-blur text-white text-xs font-bold px-4 py-2 rounded-lg group-hover:bg-white/45 transition-colors magnetic-btn">
                         Explore <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
                     </span>
                 </div>
@@ -93,15 +100,16 @@
 
             <!-- Banner 3: Electronics Deal — bottom right -->
             <div class="relative rounded-2xl overflow-hidden group cursor-pointer min-h-[150px] sweep-shine" onclick="window.location='{{ route('category', 'electronics') }}'">
-                <div class="absolute inset-0 bg-gradient-to-br from-cyan-600 to-teal-700 animate-gradient" style="background-size: 200% 200%;"></div>
-                <div class="absolute right-2 top-2 text-6xl opacity-15 group-hover:opacity-30 group-hover:scale-125 transition-all duration-500 select-none animate-float">📱</div>
+                <div class="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-110" style="background-image: url('https://images.unsplash.com/photo-1498049794561-7780e7231661?w=600&h=300&fit=crop');"></div>
+                <div class="absolute inset-0 bg-gradient-to-br from-cyan-600/80 to-teal-700/70"></div>
+                <div class="absolute top-3 right-3 w-10 h-10 rounded-full bg-white/10 backdrop-blur-sm animate-float"></div>
                 <div class="relative z-10 h-full flex flex-col justify-center p-5 md:p-6">
-                    <span class="inline-flex items-center gap-1 self-start bg-white/20 backdrop-blur text-white text-[10px] font-bold px-2.5 py-1 rounded-full mb-2 uppercase tracking-widest">
+                    <span class="inline-flex items-center gap-1 self-start bg-white/25 backdrop-blur text-white text-[10px] font-bold px-2.5 py-1 rounded-full mb-2 uppercase tracking-widest">
                         <span class="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse"></span> Live Deals
                     </span>
-                    <h3 class="text-lg md:text-xl font-extrabold text-white mb-0.5">Tech Trends</h3>
-                    <p class="text-xs md:text-sm text-white/80 mb-3">Best prices on gadgets & devices</p>
-                    <span class="inline-flex items-center gap-1.5 self-start bg-white/20 backdrop-blur text-white text-xs font-bold px-4 py-2 rounded-lg group-hover:bg-white/40 transition-colors">
+                    <h3 class="text-lg md:text-xl font-extrabold text-white mb-0.5 drop-shadow">Tech Trends</h3>
+                    <p class="text-xs md:text-sm text-white/90 mb-3">Best prices on gadgets & devices</p>
+                    <span class="inline-flex items-center gap-1.5 self-start bg-white/25 backdrop-blur text-white text-xs font-bold px-4 py-2 rounded-lg group-hover:bg-white/45 transition-colors magnetic-btn">
                         Shop Now <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
                     </span>
                 </div>
@@ -164,20 +172,25 @@
 
     <!-- Promo Banner: AI Assistant -->
     <section class="mb-10" data-reveal="scale">
-        <a href="{{ route('assistant') }}" class="block relative rounded-2xl overflow-hidden bg-gradient-to-r from-violet-600 via-purple-600 to-brand-600 p-6 md:p-8 group animate-gradient" style="background-size: 200% 200%;">
+        <a href="{{ route('assistant') }}" class="block relative rounded-2xl overflow-hidden p-6 md:p-8 group sweep-shine">
+            <!-- Background image -->
+            <div class="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-105" style="background-image: url('https://images.unsplash.com/photo-1677442136019-21780ecad995?w=1200&h=300&fit=crop');"></div>
+            <!-- Gradient overlay -->
+            <div class="absolute inset-0 bg-gradient-to-r from-violet-700/90 via-purple-700/80 to-brand-700/70 animate-gradient" style="background-size: 200% 200%;"></div>
+            <!-- Decorative floating shapes -->
+            <div class="absolute right-0 top-0 bottom-0 w-1/3 bg-white/10 skew-x-12 origin-top-right group-hover:translate-x-12 transition-transform duration-700"></div>
+            <div class="absolute -bottom-4 -left-4 w-24 h-24 rounded-full border-4 border-white/10 animate-morph"></div>
+            <div class="absolute top-6 right-10 w-16 h-16 rounded-full bg-white/10 backdrop-blur-sm animate-float"></div>
             <div class="relative z-10 flex items-center gap-4">
                 <div class="w-14 h-14 md:w-16 md:h-16 rounded-2xl bg-white/20 backdrop-blur flex items-center justify-center text-3xl md:text-4xl transform group-hover:scale-110 group-hover:rotate-12 transition-transform shrink-0 animate-glow">🤖</div>
                 <div class="flex-1 min-w-0">
-                    <h3 class="text-lg md:text-xl font-bold text-white">AI Shopping Assistant</h3>
-                    <p class="text-sm text-white/80 mt-0.5">"best running shoes under 2000" — just ask, we'll find it!</p>
+                    <h3 class="text-lg md:text-xl font-bold text-white drop-shadow">AI Shopping Assistant</h3>
+                    <p class="text-sm text-white/85 mt-0.5">"best running shoes under 2000" — just ask, we'll find it!</p>
                 </div>
-                <div class="hidden sm:flex bg-white/20 backdrop-blur px-5 py-2.5 rounded-xl text-sm font-bold text-white group-hover:bg-white/30 transition-colors items-center gap-1.5 whitespace-nowrap magnetic-btn">
+                <div class="hidden sm:flex bg-white/25 backdrop-blur px-5 py-2.5 rounded-xl text-sm font-bold text-white group-hover:bg-white/45 transition-colors items-center gap-1.5 whitespace-nowrap magnetic-btn">
                     Try Now <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
                 </div>
             </div>
-            <!-- Floating decorative shapes -->
-            <div class="absolute right-0 top-0 bottom-0 w-1/3 bg-white/10 skew-x-12 origin-top-right group-hover:translate-x-12 transition-transform duration-700"></div>
-            <div class="absolute -bottom-4 -left-4 w-24 h-24 rounded-full bg-white/5 animate-morph"></div>
         </a>
     </section>
 
@@ -209,15 +222,14 @@
     <section class="mb-10" data-reveal="up">
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <!-- Home & Kitchen -->
-            <a href="{{ route('category', 'home-kitchen') }}" class="relative rounded-2xl overflow-hidden group min-h-[140px] block sweep-shine">
-                <div class="absolute inset-0 bg-gradient-to-r from-amber-500 via-orange-500 to-red-500 animate-gradient" style="background-size: 200% 200%;"></div>
-                <div class="absolute right-0 top-0 bottom-0 w-2/5 flex items-center justify-center">
-                    <span class="text-7xl opacity-15 group-hover:opacity-25 group-hover:scale-125 group-hover:rotate-12 transition-all duration-500 select-none animate-float">🏠</span>
-                </div>
-                <div class="absolute -bottom-4 -left-4 w-24 h-24 rounded-full bg-white/5 animate-morph"></div>
+            <a href="{{ route('category', 'home-kitchen') }}" class="relative rounded-2xl overflow-hidden group min-h-[160px] block sweep-shine">
+                <div class="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-110" style="background-image: url('https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=600&h=400&fit=crop');"></div>
+                <div class="absolute inset-0 bg-gradient-to-r from-amber-500/85 via-orange-500/70 to-red-500/50 animate-gradient" style="background-size: 200% 200%;"></div>
+                <div class="absolute top-4 right-4 w-12 h-12 rounded-full border-2 border-white/20 animate-spin-slow"></div>
+                <div class="absolute -bottom-4 -left-4 w-24 h-24 rounded-full border-4 border-white/10 animate-morph"></div>
                 <div class="relative z-10 h-full flex flex-col justify-center p-5 md:p-6" style="transform: translateZ(30px)">
                     <span class="text-[10px] font-bold text-white/80 uppercase tracking-widest mb-1">Cozy Collection</span>
-                    <h3 class="text-lg md:text-xl font-extrabold text-white mb-0.5">Home & Kitchen</h3>
+                    <h3 class="text-lg md:text-xl font-extrabold text-white mb-0.5 drop-shadow">Home & Kitchen</h3>
                     <p class="text-xs text-white/85 mb-3">Upgrade your space with style</p>
                     <span class="inline-flex items-center gap-1.5 self-start bg-white text-ink-900 text-xs font-bold px-4 py-2 rounded-lg group-hover:gap-2.5 transition-all shadow-md magnetic-btn">
                         Discover More <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
@@ -226,17 +238,16 @@
             </a>
 
             <!-- Sports & Fitness -->
-            <a href="{{ route('category', 'sports') }}" class="relative rounded-2xl overflow-hidden group min-h-[140px] block sweep-shine">
-                <div class="absolute inset-0 bg-gradient-to-r from-emerald-600 via-green-600 to-teal-600 animate-gradient" style="background-size: 200% 200%;"></div>
-                <div class="absolute right-0 top-0 bottom-0 w-2/5 flex items-center justify-center">
-                    <span class="text-7xl opacity-15 group-hover:opacity-25 group-hover:scale-125 group-hover:rotate-12 transition-all duration-500 select-none animate-float-slow">⚽</span>
-                </div>
-                <div class="absolute -bottom-4 -left-4 w-24 h-24 rounded-full bg-white/5 animate-morph"></div>
+            <a href="{{ route('category', 'sports') }}" class="relative rounded-2xl overflow-hidden group min-h-[160px] block sweep-shine">
+                <div class="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-110" style="background-image: url('https://images.unsplash.com/photo-1517649763962-0c623066013b?w=600&h=400&fit=crop');"></div>
+                <div class="absolute inset-0 bg-gradient-to-r from-emerald-600/85 via-green-600/70 to-teal-600/50 animate-gradient" style="background-size: 200% 200%;"></div>
+                <div class="absolute top-4 right-4 w-10 h-10 rounded-full bg-white/10 backdrop-blur-sm animate-float"></div>
+                <div class="absolute -bottom-4 -left-4 w-20 h-20 rounded-full border-4 border-white/10 animate-morph"></div>
                 <div class="relative z-10 h-full flex flex-col justify-center p-5 md:p-6" style="transform: translateZ(30px)">
                     <span class="text-[10px] font-bold text-white/80 uppercase tracking-widest mb-1">Get Active</span>
-                    <h3 class="text-lg md:text-xl font-extrabold text-white mb-0.5">Sports & Fitness</h3>
+                    <h3 class="text-lg md:text-xl font-extrabold text-white mb-0.5 drop-shadow">Sports & Fitness</h3>
                     <p class="text-xs text-white/85 mb-3">Gear up for your active lifestyle</p>
-                    <span class="inline-flex items-center gap-1.5 self-start bg-white text-ink-900 text-xs font-bold px-4 py-2 rounded-lg group-hover:gap-2.5 transition-all shadow-md">
+                    <span class="inline-flex items-center gap-1.5 self-start bg-white text-ink-900 text-xs font-bold px-4 py-2 rounded-lg group-hover:gap-2.5 transition-all shadow-md magnetic-btn">
                         Explore <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
                     </span>
                 </div>
@@ -324,12 +335,17 @@
 
     <!-- Newsletter CTA -->
     <section class="mb-6" data-reveal="scale">
-        <div class="bg-gradient-to-br from-ink-900 to-ink-800 rounded-3xl p-8 md:p-12 text-center relative overflow-hidden animate-gradient" style="background-size: 200% 200%;">
+        <div class="rounded-3xl p-8 md:p-12 text-center relative overflow-hidden">
+            <!-- Background image -->
+            <div class="absolute inset-0 bg-cover bg-center" style="background-image: url('https://images.unsplash.com/photo-1557683316-973673baf926?w=1200&h=400&fit=crop');"></div>
+            <!-- Dark gradient overlay -->
+            <div class="absolute inset-0 bg-gradient-to-br from-ink-900/95 to-ink-800/90"></div>
             <!-- Floating shapes -->
             <div class="absolute left-4 top-4 text-9xl opacity-5 animate-float">✉</div>
             <div class="absolute right-4 bottom-4 text-9xl opacity-5 animate-float-slow">✉</div>
-            <div class="absolute -top-12 left-1/3 w-40 h-40 rounded-full bg-brand-600/10 animate-morph"></div>
-            <div class="absolute -bottom-12 right-1/4 w-32 h-32 rounded-full bg-purple-600/10 animate-float"></div>
+            <div class="absolute -top-12 left-1/3 w-40 h-40 rounded-full border-4 border-white/5 animate-spin-slow"></div>
+            <div class="absolute -bottom-12 right-1/4 w-32 h-32 rounded-full bg-brand-600/10 animate-morph"></div>
+            <div class="absolute top-12 right-16 w-6 h-6 rounded-full bg-white/10 animate-float-fast"></div>
             <div class="relative z-10 max-w-md mx-auto">
                 <h2 class="text-2xl md:text-3xl font-bold text-white mb-2 shimmer-text">Stay in the Loop</h2>
                 <p class="text-ink-400 text-sm mb-6">Get exclusive deals, new arrivals, and AI-curated picks delivered to your inbox.</p>
@@ -347,10 +363,26 @@
         return {
             current: 0,
             slides: [
-                { badge: 'Mega Sale', title: 'Up to 70% OFF', subtitle: 'Electronics, Fashion, Home & more. New deals every hour!', cta: 'Shop Now', emoji: '🛍️', bgFrom: '#dc2626', bgTo: '#7f1d1d', link: '{{ route("shop") }}' },
-                { badge: 'Premium Picks', title: 'Beauty & Fragrance', subtitle: 'Discover premium beauty brands at unbeatable prices.', cta: 'Explore Beauty', emoji: '💄', bgFrom: '#7c3aed', bgTo: '#3730a3', link: '{{ route("category", "beauty") }}' },
-                { badge: 'New Arrivals', title: 'Fashion Forward', subtitle: 'Latest trends in apparel, footwear & accessories.', cta: 'Shop Fashion', emoji: '👗', bgFrom: '#0891b2', bgTo: '#164e63', link: '{{ route("category", "fashion") }}' },
-                { badge: 'Smart Living', title: 'Home & Kitchen', subtitle: 'Transform your home with smart essentials.', cta: 'Shop Home', emoji: '🏠', bgFrom: '#c2410c', bgTo: '#7c2d12', link: '{{ route("category", "home-kitchen") }}' },
+                {
+                    badge: 'Mega Sale', title: 'Up to 70% OFF', subtitle: 'Electronics, Fashion, Home & more. New deals every hour!',
+                    cta: 'Shop Now', image: 'https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?w=1200&h=600&fit=crop',
+                    overlay: 'linear-gradient(135deg, rgba(220,38,38,0.85), rgba(127,29,29,0.7))', link: '{{ route("shop") }}'
+                },
+                {
+                    badge: 'Premium Picks', title: 'Beauty & Fragrance', subtitle: 'Discover premium beauty brands at unbeatable prices.',
+                    cta: 'Explore Beauty', image: 'https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=1200&h=600&fit=crop',
+                    overlay: 'linear-gradient(135deg, rgba(124,58,237,0.85), rgba(55,48,163,0.7))', link: '{{ route("category", "beauty") }}'
+                },
+                {
+                    badge: 'New Arrivals', title: 'Fashion Forward', subtitle: 'Latest trends in apparel, footwear & accessories.',
+                    cta: 'Shop Fashion', image: 'https://images.unsplash.com/photo-1483985988355-763728e1935b?w=1200&h=600&fit=crop',
+                    overlay: 'linear-gradient(135deg, rgba(8,145,178,0.85), rgba(22,78,99,0.7))', link: '{{ route("category", "fashion") }}'
+                },
+                {
+                    badge: 'Smart Living', title: 'Home & Kitchen', subtitle: 'Transform your home with smart essentials.',
+                    cta: 'Shop Home', image: 'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=1200&h=600&fit=crop',
+                    overlay: 'linear-gradient(135deg, rgba(194,65,12,0.85), rgba(124,45,18,0.7))', link: '{{ route("category", "home-kitchen") }}'
+                },
             ],
             init() {
                 setInterval(() => this.next(), 5000);
