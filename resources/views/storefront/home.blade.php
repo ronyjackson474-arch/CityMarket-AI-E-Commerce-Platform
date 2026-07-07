@@ -66,7 +66,7 @@
                 <!-- Background image -->
                 <div class="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-110" style="background-image: url('https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=800&h=600&fit=crop');"></div>
                 <!-- Gradient overlay -->
-                <div class="absolute inset-0 bg-gradient-to-br from-rose-500/80 via-pink-500/60 to-purple-600/50 animate-gradient" style="background-size: 200% 200%;"></div>
+                <div class="absolute inset-0 bg-gradient-to-br from-rose-500/70 via-pink-500/40 to-transparent"></div>
                 <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
                 <!-- Decorative shapes -->
                 <div class="absolute -top-8 -left-8 w-32 h-32 rounded-full border-4 border-white/10 animate-spin-slow"></div>
@@ -86,7 +86,7 @@
             <!-- Banner 2: Beauty Bonanza — top right -->
             <div class="relative rounded-2xl overflow-hidden group cursor-pointer min-h-[150px] sweep-shine" onclick="window.location='{{ route('category', 'beauty') }}'">
                 <div class="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-110" style="background-image: url('https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=600&h=300&fit=crop');"></div>
-                <div class="absolute inset-0 bg-gradient-to-br from-violet-600/80 to-indigo-700/70"></div>
+                <div class="absolute inset-0 bg-gradient-to-br from-violet-600/70 to-transparent"></div>
                 <div class="absolute top-3 right-3 w-12 h-12 rounded-full border-2 border-white/20 animate-spin-slow"></div>
                 <div class="relative z-10 h-full flex flex-col justify-center p-5 md:p-6">
                     <span class="inline-block self-start bg-white/25 backdrop-blur text-white text-[10px] font-bold px-2.5 py-1 rounded-full mb-2 uppercase tracking-widest">Exclusive</span>
@@ -101,7 +101,7 @@
             <!-- Banner 3: Electronics Deal — bottom right -->
             <div class="relative rounded-2xl overflow-hidden group cursor-pointer min-h-[150px] sweep-shine" onclick="window.location='{{ route('category', 'electronics') }}'">
                 <div class="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-110" style="background-image: url('https://images.unsplash.com/photo-1498049794561-7780e7231661?w=600&h=300&fit=crop');"></div>
-                <div class="absolute inset-0 bg-gradient-to-br from-cyan-600/80 to-teal-700/70"></div>
+                <div class="absolute inset-0 bg-gradient-to-br from-cyan-600/70 to-transparent"></div>
                 <div class="absolute top-3 right-3 w-10 h-10 rounded-full bg-white/10 backdrop-blur-sm animate-float"></div>
                 <div class="relative z-10 h-full flex flex-col justify-center p-5 md:p-6">
                     <span class="inline-flex items-center gap-1 self-start bg-white/25 backdrop-blur text-white text-[10px] font-bold px-2.5 py-1 rounded-full mb-2 uppercase tracking-widest">
@@ -176,7 +176,7 @@
             <!-- Background image -->
             <div class="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-105" style="background-image: url('https://images.unsplash.com/photo-1677442136019-21780ecad995?w=1200&h=300&fit=crop');"></div>
             <!-- Gradient overlay -->
-            <div class="absolute inset-0 bg-gradient-to-r from-violet-700/90 via-purple-700/80 to-brand-700/70 animate-gradient" style="background-size: 200% 200%;"></div>
+            <div class="absolute inset-0 bg-gradient-to-r from-violet-700/80 via-purple-700/50 to-transparent"></div>
             <!-- Decorative floating shapes -->
             <div class="absolute right-0 top-0 bottom-0 w-1/3 bg-white/10 skew-x-12 origin-top-right group-hover:translate-x-12 transition-transform duration-700"></div>
             <div class="absolute -bottom-4 -left-4 w-24 h-24 rounded-full border-4 border-white/10 animate-morph"></div>
@@ -224,7 +224,7 @@
             <!-- Home & Kitchen -->
             <a href="{{ route('category', 'home-kitchen') }}" class="relative rounded-2xl overflow-hidden group min-h-[160px] block sweep-shine">
                 <div class="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-110" style="background-image: url('https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=600&h=400&fit=crop');"></div>
-                <div class="absolute inset-0 bg-gradient-to-r from-amber-500/85 via-orange-500/70 to-red-500/50 animate-gradient" style="background-size: 200% 200%;"></div>
+                <div class="absolute inset-0 bg-gradient-to-r from-amber-500/75 via-orange-500/40 to-transparent"></div>
                 <div class="absolute top-4 right-4 w-12 h-12 rounded-full border-2 border-white/20 animate-spin-slow"></div>
                 <div class="absolute -bottom-4 -left-4 w-24 h-24 rounded-full border-4 border-white/10 animate-morph"></div>
                 <div class="relative z-10 h-full flex flex-col justify-center p-5 md:p-6" style="transform: translateZ(30px)">
@@ -240,7 +240,7 @@
             <!-- Sports & Fitness -->
             <a href="{{ route('category', 'sports') }}" class="relative rounded-2xl overflow-hidden group min-h-[160px] block sweep-shine">
                 <div class="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-110" style="background-image: url('https://images.unsplash.com/photo-1517649763962-0c623066013b?w=600&h=400&fit=crop');"></div>
-                <div class="absolute inset-0 bg-gradient-to-r from-emerald-600/85 via-green-600/70 to-teal-600/50 animate-gradient" style="background-size: 200% 200%;"></div>
+                <div class="absolute inset-0 bg-gradient-to-r from-emerald-600/75 via-green-600/40 to-transparent"></div>
                 <div class="absolute top-4 right-4 w-10 h-10 rounded-full bg-white/10 backdrop-blur-sm animate-float"></div>
                 <div class="absolute -bottom-4 -left-4 w-20 h-20 rounded-full border-4 border-white/10 animate-morph"></div>
                 <div class="relative z-10 h-full flex flex-col justify-center p-5 md:p-6" style="transform: translateZ(30px)">
@@ -366,22 +366,22 @@
                 {
                     badge: 'Mega Sale', title: 'Up to 70% OFF', subtitle: 'Electronics, Fashion, Home & more. New deals every hour!',
                     cta: 'Shop Now', image: 'https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?w=1200&h=600&fit=crop',
-                    overlay: 'linear-gradient(135deg, rgba(220,38,38,0.85), rgba(127,29,29,0.7))', link: '{{ route("shop") }}'
+                    overlay: 'linear-gradient(90deg, rgba(220,38,38,0.85) 0%, rgba(220,38,38,0.45) 50%, transparent 100%)', link: '{{ route("shop") }}'
                 },
                 {
                     badge: 'Premium Picks', title: 'Beauty & Fragrance', subtitle: 'Discover premium beauty brands at unbeatable prices.',
                     cta: 'Explore Beauty', image: 'https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=1200&h=600&fit=crop',
-                    overlay: 'linear-gradient(135deg, rgba(124,58,237,0.85), rgba(55,48,163,0.7))', link: '{{ route("category", "beauty") }}'
+                    overlay: 'linear-gradient(90deg, rgba(124,58,237,0.85) 0%, rgba(124,58,237,0.45) 50%, transparent 100%)', link: '{{ route("category", "beauty") }}'
                 },
                 {
                     badge: 'New Arrivals', title: 'Fashion Forward', subtitle: 'Latest trends in apparel, footwear & accessories.',
                     cta: 'Shop Fashion', image: 'https://images.unsplash.com/photo-1483985988355-763728e1935b?w=1200&h=600&fit=crop',
-                    overlay: 'linear-gradient(135deg, rgba(8,145,178,0.85), rgba(22,78,99,0.7))', link: '{{ route("category", "fashion") }}'
+                    overlay: 'linear-gradient(90deg, rgba(8,145,178,0.85) 0%, rgba(8,145,178,0.45) 50%, transparent 100%)', link: '{{ route("category", "fashion") }}'
                 },
                 {
                     badge: 'Smart Living', title: 'Home & Kitchen', subtitle: 'Transform your home with smart essentials.',
                     cta: 'Shop Home', image: 'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=1200&h=600&fit=crop',
-                    overlay: 'linear-gradient(135deg, rgba(194,65,12,0.85), rgba(124,45,18,0.7))', link: '{{ route("category", "home-kitchen") }}'
+                    overlay: 'linear-gradient(90deg, rgba(194,65,12,0.85) 0%, rgba(194,65,12,0.45) 50%, transparent 100%)', link: '{{ route("category", "home-kitchen") }}'
                 },
             ],
             init() {
