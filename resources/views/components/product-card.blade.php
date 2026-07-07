@@ -1,38 +1,40 @@
 @props(['product'])
 
-<div class="group bg-white rounded-xl border border-ink-100 overflow-hidden card-hover relative">
+<div class="group bg-white rounded-xl border border-ink-100 overflow-hidden card-hover relative glow-border card-3d-tilt preserve-3d">
     <!-- Wishlist button -->
     @auth
-        <button onclick="toggleWishlist({{ $product->id }}, this)" class="absolute top-2.5 right-2.5 z-10 w-9 h-9 rounded-full bg-white shadow-md flex items-center justify-center hover:bg-white transition-all hover:scale-110 wishlist-btn-{{ $product->id }}" title="Add to wishlist">
+        <button onclick="toggleWishlist({{ $product->id }}, this)" class="absolute top-2.5 right-2.5 z-10 w-9 h-9 rounded-full bg-white shadow-md flex items-center justify-center hover:bg-white transition-all hover:scale-125 hover:rotate-12 wishlist-btn-{{ $product->id }}" title="Add to wishlist">
             <svg class="w-4 h-4 text-ink-600 transition-colors wishlist-icon-{{ $product->id }}" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
             </svg>
         </button>
     @else
-        <a href="{{ route('login') }}" class="absolute top-2.5 right-2.5 z-10 w-9 h-9 rounded-full bg-white shadow-md flex items-center justify-center hover:bg-white transition-all hover:scale-110" title="Login to add to wishlist">
+        <a href="{{ route('login') }}" class="absolute top-2.5 right-2.5 z-10 w-9 h-9 rounded-full bg-white shadow-md flex items-center justify-center hover:bg-white transition-all hover:scale-125 hover:rotate-12" title="Login to add to wishlist">
             <svg class="w-4 h-4 text-ink-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
             </svg>
         </a>
     @endauth
 
-    <a href="{{ route('product', $product->slug) }}" class="block">
+    <a href="{{ route('product', $product->slug) }}" class="block tilt-inner">
         <div class="aspect-square bg-ink-50 relative overflow-hidden">
             @if($product->primary_image)
                 <img src="{{ $product->primary_image }}" alt="{{ $product->name }}"
-                    class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" loading="lazy">
+                    class="w-full h-full object-cover group-hover:scale-125 transition-transform duration-700" loading="lazy">
             @else
                 <div class="w-full h-full flex items-center justify-center text-ink-300">
                     <svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
                 </div>
             @endif
+            <!-- Shine overlay on hover -->
+            <div class="absolute inset-0 sweep-shine pointer-events-none"></div>
             <!-- Discount badge -->
             @if($product->discount_percent > 0)
-                <span class="absolute top-2.5 left-2.5 bg-brand-600 text-white text-[11px] font-bold px-2 py-1 rounded-md shadow-md">-{{ $product->discount_percent }}%</span>
+                <span class="absolute top-2.5 left-2.5 bg-brand-600 text-white text-[11px] font-bold px-2 py-1 rounded-md shadow-md animate-bounce-in">-{{ $product->discount_percent }}%</span>
             @endif
             <!-- Flash badge -->
             @if($product->is_flash_deal)
-                <span class="absolute bottom-2.5 left-2.5 bg-amber-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-md shadow flex items-center gap-0.5">⚡ Flash</span>
+                <span class="absolute bottom-2.5 left-2.5 bg-amber-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-md shadow flex items-center gap-0.5 animate-pulse">⚡ Flash</span>
             @endif
         </div>
     </a>
@@ -58,7 +60,7 @@
                 @endif
             </div>
             @if($product->stock > 0)
-                <button onclick="quickAddToCart({{ $product->id }}, event)" class="opacity-0 group-hover:opacity-100 transition-all w-8 h-8 bg-ink-900 hover:bg-brand-600 text-white rounded-lg flex items-center justify-center shadow-sm" title="Add to cart">
+                <button onclick="quickAddToCart({{ $product->id }}, event)" class="opacity-0 group-hover:opacity-100 transition-all w-8 h-8 bg-ink-900 hover:bg-brand-600 text-white rounded-lg flex items-center justify-center shadow-sm magnetic-btn hover:scale-110" title="Add to cart">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>
                 </button>
             @else

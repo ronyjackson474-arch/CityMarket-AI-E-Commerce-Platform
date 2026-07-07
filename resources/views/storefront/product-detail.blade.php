@@ -9,48 +9,116 @@
     </nav>
 
     <div class="grid lg:grid-cols-12 gap-8 mb-12">
-        <!-- Image Gallery -->
+        <!-- Image Gallery + 3D/AR Viewer -->
         <div class="lg:col-span-5">
-            <div class="lg:sticky lg:top-24">
-                <div class="bg-white rounded-2xl border border-ink-100 overflow-hidden aspect-square mb-3 relative group">
+            <div class="lg:sticky lg:top-24" data-reveal="right">
+                <div class="bg-white rounded-2xl border border-ink-100 overflow-hidden aspect-square mb-3 relative group ar-stage">
                     @if($product->images->isNotEmpty())
                         @if($product->discount_percent > 0)
-                            <div class="absolute top-3 left-3 z-10 bg-rose-500 text-white text-xs font-bold px-2.5 py-1 rounded-lg shadow-lg">-{{ $product->discount_percent }}%</div>
+                            <div class="absolute top-3 left-3 z-10 bg-rose-500 text-white text-xs font-bold px-2.5 py-1 rounded-lg shadow-lg animate-bounce-in">-{{ $product->discount_percent }}%</div>
                         @endif
                         @if($product->is_flash_deal)
-                            <div class="absolute top-3 right-3 z-10 bg-gradient-to-r from-orange-500 to-rose-500 text-white text-xs font-bold px-2.5 py-1 rounded-lg shadow-lg flex items-center gap-1">⚡ FLASH</div>
+                            <div class="absolute top-3 right-3 z-10 bg-gradient-to-r from-orange-500 to-rose-500 text-white text-xs font-bold px-2.5 py-1 rounded-lg shadow-lg flex items-center gap-1 animate-pulse">⚡ FLASH</div>
                         @endif
-                        <img id="main-product-image" src="{{ $product->images->first()->image_path }}" alt="{{ $product->name }}" class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105">
+                        <img id="main-product-image" src="{{ $product->images->first()->image_path }}" alt="{{ $product->name }}" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110">
+                        <!-- Shine effect overlay -->
+                        <div class="absolute inset-0 sweep-shine pointer-events-none"></div>
                     @else
                         <div class="w-full h-full flex items-center justify-center text-ink-300">
                             <svg class="w-24 h-24" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
                         </div>
                     @endif
+                    <!-- AR View Button (floating) -->
+                    <button data-ar-open class="absolute bottom-3 right-3 z-20 bg-ink-900/90 backdrop-blur text-white text-xs font-bold px-4 py-2.5 rounded-xl shadow-lg flex items-center gap-2 hover:bg-brand-600 transition-all magnetic-btn animate-glow">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"/><path stroke-linecap="round" stroke-linejoin="round" d="M3 9l9-6 9 6M3 9v6m18-6v6"/></svg>
+                        View in AR
+                    </button>
                 </div>
                 @if($product->images->count() > 1)
                     <div class="grid grid-cols-5 gap-2">
                         @foreach($product->images as $img)
                             <button onclick="document.getElementById('main-product-image').src = '{{ $img->image_path }}'; document.querySelectorAll('.thumb-btn').forEach(b => b.classList.remove('border-brand-500')); this.classList.add('border-brand-500')"
-                                class="thumb-btn aspect-square rounded-lg overflow-hidden border-2 border-transparent hover:border-brand-400 transition-all {{ $loop->first ? 'border-brand-500' : '' }}">
+                                class="thumb-btn aspect-square rounded-lg overflow-hidden border-2 border-transparent hover:border-brand-400 transition-all hover:scale-105 {{ $loop->first ? 'border-brand-500' : '' }}">
                                 <img src="{{ $img->image_path }}" alt="" class="w-full h-full object-cover">
                             </button>
                         @endforeach
                     </div>
                 @endif
+                <!-- Trust badges with animations -->
+                <div class="mt-4 grid grid-cols-3 gap-2 text-center">
+                    <div class="p-3 bg-green-50 rounded-xl" data-reveal="scale" data-reveal-delay="0">
+                        <div class="text-2xl mb-1 animate-float">🚚</div>
+                        <div class="text-xs font-semibold text-ink-700">Free Delivery</div>
+                    </div>
+                    <div class="p-3 bg-blue-50 rounded-xl" data-reveal="scale" data-reveal-delay="100">
+                        <div class="text-2xl mb-1 animate-float-slow">🔄</div>
+                        <div class="text-xs font-semibold text-ink-700">7-Day Returns</div>
+                    </div>
+                    <div class="p-3 bg-purple-50 rounded-xl" data-reveal="scale" data-reveal-delay="200">
+                        <div class="text-2xl mb-1 animate-float">🔒</div>
+                        <div class="text-xs font-semibold text-ink-700">Secure Pay</div>
+                    </div>
+                </div>
             </div>
         </div>
 
+        <!-- AR Modal (immersive product viewer) -->
+        @if($product->images->isNotEmpty())
+        <div id="ar-modal" class="ar-modal-backdrop">
+            <div class="ar-modal-panel relative w-full max-w-md mx-4">
+                <!-- Close button -->
+                <button data-ar-close class="absolute -top-12 right-0 w-10 h-10 rounded-full bg-white/10 backdrop-blur flex items-center justify-center text-white hover:bg-white/30 transition-all z-10">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+                <!-- AR header -->
+                <div class="text-center mb-4">
+                    <span class="inline-block bg-white/10 backdrop-blur text-white text-xs font-bold px-3 py-1.5 rounded-full mb-2 uppercase tracking-widest">AR Preview</span>
+                    <h3 class="text-lg font-bold text-white">{{ $product->name }}</h3>
+                    <p class="text-xs text-white/60 mt-1">Drag to rotate · Auto-rotating</p>
+                </div>
+                <!-- 3D product stage -->
+                <div class="ar-stage h-72 flex items-center justify-center">
+                    <div id="ar-product-card" class="ar-product-card ar-auto-rotate relative w-48 h-48 cursor-grab active:cursor-grabbing">
+                        <div class="ar-face ar-face-front shadow-2xl rounded-2xl overflow-hidden">
+                            <img src="{{ $product->images->first()->image_path }}" alt="{{ $product->name }}" class="w-full h-full object-cover">
+                        </div>
+                        <div class="ar-face ar-face-back shadow-2xl rounded-2xl overflow-hidden bg-ink-800 flex items-center justify-center">
+                            @if($product->images->count() > 1)
+                                <img src="{{ $product->images->skip(1)->first()->image_path }}" alt="" class="w-full h-full object-cover" style="transform: scaleX(-1);">
+                            @else
+                                <img src="{{ $product->images->first()->image_path }}" alt="" class="w-full h-full object-cover" style="transform: scaleX(-1);">
+                            @endif
+                        </div>
+                    </div>
+                </div>
+                <!-- Floating particles -->
+                <div class="absolute top-10 left-8 w-6 h-6 rounded-full bg-brand-500/20 animate-float"></div>
+                <div class="absolute bottom-20 right-8 w-8 h-8 rounded-full bg-purple-500/20 animate-float-slow"></div>
+                <div class="absolute top-20 right-12 w-4 h-4 rounded-full bg-cyan-500/30 animate-float-fast"></div>
+                <!-- AR controls -->
+                <div class="flex justify-center gap-3 mt-4">
+                    <button onclick="const c=document.getElementById('ar-product-card'); c.classList.toggle('ar-auto-rotate'); if(c.classList.contains('ar-auto-rotate')){c.style.transform='';}" class="bg-white/10 backdrop-blur text-white text-xs font-semibold px-4 py-2 rounded-lg hover:bg-white/20 transition-all magnetic-btn">
+                        ↻ Toggle Rotate
+                    </button>
+                    <button data-ar-close class="bg-brand-600 text-white text-xs font-semibold px-4 py-2 rounded-lg hover:bg-brand-500 transition-all magnetic-btn">Close</button>
+                </div>
+            </div>
+        </div>
+        @endif
+
         <!-- Details -->
-        <div class="lg:col-span-7">
+        <div class="lg:col-span-7" data-reveal="left">
             @if($product->brand)
-                <a href="{{ route('shop', ['brand' => $product->brand_id]) }}" class="inline-block text-sm text-brand-600 font-semibold hover:underline bg-brand-50 px-3 py-1 rounded-full mb-3">{{ $product->brand->name }}</a>
+                <a href="{{ route('shop', ['brand' => $product->brand_id]) }}" class="inline-block text-sm text-brand-600 font-semibold hover:underline bg-brand-50 px-3 py-1 rounded-full mb-3 animate-bounce-in">{{ $product->brand->name }}</a>
             @endif
-            <h1 class="text-3xl font-bold text-ink-900 mb-3">{{ $product->name }}</h1>
+            <h1 class="text-3xl font-bold text-ink-900 mb-3 shimmer-text">{{ $product->name }}</h1>
 
             <div class="flex flex-wrap items-center gap-3 mb-5">
                 <div class="flex items-center bg-green-50 px-2.5 py-1 rounded-lg">
                     <span class="text-amber-400 text-sm">
-                        @for($i = 1; $i <= 5; $i++)@if($product->rating >= $i)★ @elseif($product->rating >= $i - 0.5)★ @else☆@endif@endfor
+                        @for($i = 1; $i <= 5; $i++)
+                            @if($product->rating >= $i)★ @elseif($product->rating >= $i - 0.5)★ @else☆@endif
+                        @endfor
                     </span>
                     <span class="text-ink-800 text-sm ml-1 font-bold">{{ number_format($product->rating, 1) }}</span>
                 </div>
@@ -154,15 +222,15 @@
 
             <!-- Add to cart -->
             @if($product->stock > 0)
-                <form action="{{ route('cart.add') }}" method="POST" class="flex flex-wrap items-center gap-3 mb-6">
+                <form action="{{ route('cart.add') }}" method="POST" class="flex flex-wrap items-center gap-3 mb-6" data-reveal="up">
                     @csrf
                     <input type="hidden" name="product_id" value="{{ $product->id }}">
                     <div class="flex items-center border-2 border-ink-200 rounded-xl overflow-hidden bg-white">
-                        <button type="button" onclick="var i=this.nextElementSibling; if(i.value>1){i.value--; i.dispatchEvent(new Event('change'))}" class="px-4 py-3 text-ink-600 hover:bg-ink-50 text-lg font-bold">−</button>
+                        <button type="button" onclick="var i=this.nextElementSibling; if(i.value>1){i.value--; i.dispatchEvent(new Event('change'))}" class="px-4 py-3 text-ink-600 hover:bg-brand-50 hover:text-brand-600 text-lg font-bold transition-colors">−</button>
                         <input type="number" name="quantity" value="1" min="1" max="{{ $product->stock }}" class="w-16 text-center border-0 focus:ring-0 outline-none font-bold text-lg">
-                        <button type="button" onclick="var i=this.previousElementSibling; if(i.value<{{ $product->stock }}){i.value++; i.dispatchEvent(new Event('change'))}" class="px-4 py-3 text-ink-600 hover:bg-ink-50 text-lg font-bold">+</button>
+                        <button type="button" onclick="var i=this.previousElementSibling; if(i.value<{{ $product->stock }}){i.value++; i.dispatchEvent(new Event('change'))}" class="px-4 py-3 text-ink-600 hover:bg-brand-50 hover:text-brand-600 text-lg font-bold transition-colors">+</button>
                     </div>
-                    <button type="submit" class="flex-1 min-w-[200px] bg-brand-600 text-white font-semibold py-3 px-8 rounded-xl hover:bg-brand-700 transition-all flex items-center justify-center gap-2 shadow-lg shadow-brand-600/20 hover:shadow-brand-600/30">
+                    <button type="submit" class="flex-1 min-w-[200px] bg-brand-600 text-white font-semibold py-3 px-8 rounded-xl hover:bg-brand-700 transition-all flex items-center justify-center gap-2 shadow-lg shadow-brand-600/20 hover:shadow-brand-600/40 hover:scale-105 btn-shine sweep-shine magnetic-btn">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
                         Add to Cart
                     </button>
@@ -170,14 +238,14 @@
                         <form action="{{ route('wishlist.add') }}" method="POST" class="contents">
                             @csrf
                             <input type="hidden" name="product_id" value="{{ $product->id }}">
-                            <button type="submit" class="p-3 border-2 border-ink-200 rounded-xl text-ink-600 hover:text-rose-600 hover:border-rose-400 transition-all" title="Add to Wishlist">
+                            <button type="submit" class="p-3 border-2 border-ink-200 rounded-xl text-ink-600 hover:text-rose-600 hover:border-rose-400 hover:scale-110 transition-all magnetic-btn" title="Add to Wishlist">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
                             </button>
                         </form>
                     @endauth
                 </form>
             @else
-                <div class="bg-ink-100 text-ink-500 text-center py-4 rounded-xl font-semibold mb-6">Currently Out of Stock</div>
+                <div class="bg-ink-100 text-ink-500 text-center py-4 rounded-xl font-semibold mb-6 animate-pulse">Currently Out of Stock</div>
             @endif
 
             <!-- Trust badges -->
@@ -199,14 +267,16 @@
     </div>
 
     @if($related->isNotEmpty())
-    <section class="mb-12">
+    <section class="mb-12" data-reveal="up">
         <div class="flex items-center justify-between mb-4">
-            <h2 class="text-xl font-bold text-ink-900">You May Also Like</h2>
-            <a href="{{ route('category', $product->category->slug) }}" class="text-sm text-brand-600 hover:underline font-medium">View all →</a>
+            <h2 class="text-xl font-bold text-ink-900 shimmer-text">You May Also Like</h2>
+            <a href="{{ route('category', $product->category->slug) }}" class="text-sm text-brand-600 hover:underline font-medium anim-underline">View all →</a>
         </div>
-        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 perspective-1000">
             @foreach($related as $relProduct)
-                <x-product-card :product="$relProduct" />
+                <div class="card-3d-tilt" data-reveal="scale" data-reveal-delay="{{ $loop->index * 80 }}">
+                    <x-product-card :product="$relProduct" />
+                </div>
             @endforeach
         </div>
     </section>
