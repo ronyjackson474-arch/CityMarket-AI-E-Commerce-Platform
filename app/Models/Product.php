@@ -119,20 +119,32 @@ class Product extends Model
     public function scopeApplyFilters(Builder $query, array $filters): Builder
     {
         return $query
-            ->when(data_get($filters, 'category'), fn ($q, $v) => $q->where('category_id', $v))
+            ->when(data_get($filters, 'category'), function ($q, $v) {
+                $cat = Category::find($v);
+                $q->when($cat, fn ($qq) => $qq->whereIn('category_id', $cat->descendantIds()));
+            })
             ->when(data_get($filters, 'category_slug'), function ($q, $slug) {
                 $cat = Category::where('slug', $slug)->first();
-                $q->when($cat, fn ($qq) => $qq->where('category_id', $cat->id));
+                $q->when($cat, fn ($qq) => $qq->whereIn('category_id', $cat->descendantIds()));
             })
             ->when(data_get($filters, 'brand'), fn ($q, $v) => $q->where('brand_id', $v))
             ->when(data_get($filters, 'price_min'), fn ($q, $v) => $q->where('price', '>=', $v))
             ->when(data_get($filters, 'price_max'), fn ($q, $v) => $q->where('price', '<=', $v))
             ->when(data_get($filters, 'min_rating'), fn ($q, $v) => $q->where('rating', '>=', $v))
             ->when(data_get($filters, 'search'), function ($q, $term) {
-                $q->where(function ($qq) use ($term) {
+                $terms = array_filter(preg_split('/\s+/', trim($term)));
+                $q->where(function ($qq) use ($term, $terms) {
+                    // Match the full phrase first (higher relevance)
                     $qq->where('name', 'like', "%{$term}%")
                         ->orWhere('description', 'like', "%{$term}%")
                         ->orWhere('sku', 'like', "%{$term}%");
+                    // Then match any individual word for broader recall
+                    foreach ($terms as $word) {
+                        if (strlen($word) >= 3) {
+                            $qq->orWhere('name', 'like', "%{$word}%")
+                                ->orWhere('description', 'like', "%{$word}%");
+                        }
+                    }
                 });
             })
             ->when(data_get($filters, 'sort'), function ($q, $sort) {

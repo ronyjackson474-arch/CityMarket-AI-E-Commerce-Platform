@@ -21,26 +21,45 @@ class WishlistController extends Controller
     public function add(Request $request)
     {
         $data = $request->validate([
-            'product_id' => ['required', 'exists:products,id'],
+            'product_slug' => ['string', 'exists:products,slug'],
+            'product_id' => ['integer', 'exists:products,id'],
         ]);
 
-        $product = Product::findOrFail($data['product_id']);
+        if (empty($data['product_slug']) && empty($data['product_id'])) {
+            return response()->json(['message' => 'Either product_slug or product_id is required.'], 422);
+        }
+
+        $product = $this->resolveProduct($data);
 
         $request->user()->wishlist()->syncWithoutDetaching([$product->id]);
 
         return response()->json([
-            'message' => "{$product->name} added to wishlist.",
+            "message" => "{$product->name} added to wishlist.",
         ], 201);
     }
 
     public function remove(Request $request)
     {
         $data = $request->validate([
-            'product_id' => ['required', 'exists:products,id'],
+            'product_slug' => ['string', 'exists:products,slug'],
+            'product_id' => ['integer', 'exists:products,id'],
         ]);
 
-        $request->user()->wishlist()->detach($data['product_id']);
+        if (empty($data['product_slug']) && empty($data['product_id'])) {
+            return response()->json(['message' => 'Either product_slug or product_id is required.'], 422);
+        }
+
+        $request->user()->wishlist()->detach($this->resolveProduct($data)->id);
 
         return response()->json(['message' => 'Removed from wishlist.']);
+    }
+
+    protected function resolveProduct(array $data): Product
+    {
+        if (! empty($data['product_slug'])) {
+            return Product::where('slug', $data['product_slug'])->firstOrFail();
+        }
+
+        return Product::findOrFail($data['product_id']);
     }
 }

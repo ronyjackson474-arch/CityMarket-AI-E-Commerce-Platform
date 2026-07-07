@@ -41,4 +41,23 @@ class Category extends Model
     {
         return $this->hasMany(Product::class);
     }
+
+    /**
+     * Get this category's ID plus all descendant IDs (recursive).
+     * Used for filtering products across a category hierarchy.
+     */
+    public function descendantIds(): array
+    {
+        $ids = [$this->id];
+        $childIds = static::where('parent_id', $this->id)->pluck('id')->toArray();
+
+        foreach ($childIds as $childId) {
+            $child = static::find($childId);
+            if ($child) {
+                $ids = array_merge($ids, $child->descendantIds());
+            }
+        }
+
+        return $ids;
+    }
 }

@@ -34,11 +34,16 @@ class CartController extends Controller
     public function add(Request $request)
     {
         $data = $request->validate([
-            'product_id' => ['required', 'exists:products,id'],
+            'product_slug' => ['string', 'exists:products,slug'],
+            'product_id' => ['integer', 'exists:products,id'],
             'quantity' => ['nullable', 'integer', 'min:1'],
         ]);
 
-        $product = Product::findOrFail($data['product_id']);
+        if (empty($data['product_slug']) && empty($data['product_id'])) {
+            return response()->json(['message' => 'Either product_slug or product_id is required.'], 422);
+        }
+
+        $product = $this->resolveProduct($data);
 
         if (! $product->is_active) {
             return response()->json(['message' => 'This product is not available.'], 400);
@@ -88,12 +93,17 @@ class CartController extends Controller
     public function update(Request $request)
     {
         $data = $request->validate([
-            'product_id' => ['required', 'exists:products,id'],
+            'product_slug' => ['string', 'exists:products,slug'],
+            'product_id' => ['integer', 'exists:products,id'],
             'quantity' => ['required', 'integer', 'min:1'],
         ]);
 
+        if (empty($data['product_slug']) && empty($data['product_id'])) {
+            return response()->json(['message' => 'Either product_slug or product_id is required.'], 422);
+        }
+
         $cart = $this->getCart($request);
-        $item = $cart->items()->where('product_id', $data['product_id'])->first();
+        $item = $cart->items()->where('product_id', $this->resolveProduct($data)->id)->first();
 
         if (! $item) {
             return response()->json(['message' => 'Item not found in cart.'], 404);
@@ -123,11 +133,16 @@ class CartController extends Controller
     public function remove(Request $request)
     {
         $data = $request->validate([
-            'product_id' => ['required', 'exists:products,id'],
+            'product_slug' => ['string', 'exists:products,slug'],
+            'product_id' => ['integer', 'exists:products,id'],
         ]);
 
+        if (empty($data['product_slug']) && empty($data['product_id'])) {
+            return response()->json(['message' => 'Either product_slug or product_id is required.'], 422);
+        }
+
         $cart = $this->getCart($request);
-        $deleted = $cart->items()->where('product_id', $data['product_id'])->delete();
+        $deleted = $cart->items()->where('product_id', $this->resolveProduct($data)->id)->delete();
 
         if (! $deleted) {
             return response()->json(['message' => 'Item not found in cart.'], 404);
@@ -152,5 +167,14 @@ class CartController extends Controller
     protected function getCart(Request $request): Cart
     {
         return $this->cartService->forUser($request->user());
+    }
+
+    protected function resolveProduct(array $data): Product
+    {
+        if (! empty($data['product_slug'])) {
+            return Product::where('slug', $data['product_slug'])->firstOrFail();
+        }
+
+        return Product::findOrFail($data['product_id']);
     }
 }

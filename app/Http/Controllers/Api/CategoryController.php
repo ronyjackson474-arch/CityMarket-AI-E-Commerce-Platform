@@ -23,10 +23,19 @@ class CategoryController extends Controller
         ]);
     }
 
-    public function show(Category $category)
+    public function show(string $slug)
     {
+        $category = Category::where('slug', $slug)
+            ->where('is_active', true)
+            ->with(['children' => fn ($q) => $q->where('is_active', true)->orderBy('position'), 'parent'])
+            ->first();
+
+        if (! $category) {
+            return response()->json(['message' => 'Category not found.'], 404);
+        }
+
         return response()->json([
-            'data' => $category->load('children', 'parent'),
+            'data' => $category,
         ]);
     }
 }
