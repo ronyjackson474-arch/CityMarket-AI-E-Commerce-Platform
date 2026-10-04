@@ -38,6 +38,37 @@ class _AiChatScreenState extends State<AiChatScreen> {
     _messages.add(ChatMessage.assistant(
       'Hi! I\'m your CityMarket AI assistant 🤖\nHow can I help you shop today?',
     ));
+    _loadHistory();
+  }
+
+  /// Load the most recent conversation's messages (if any).
+  Future<void> _loadHistory() async {
+    try {
+      final convRes = await _api.getConversations();
+      final list = convRes['data'] as List? ?? [];
+      if (list.isEmpty) return;
+      final convId = (list.first as Map<String, dynamic>)['id'] as int?;
+      if (convId == null) return;
+      final msgRes = await _api.getConversationMessages(convId);
+      final msgs = msgRes['data'] as List? ?? [];
+      if (msgs.isEmpty) return;
+      setState(() {
+        _conversationId = convId;
+        _messages.clear();
+        for (final m in msgs) {
+          final mm = m as Map<String, dynamic>;
+          final role = mm['role'] as String? ?? 'user';
+          final content = mm['content'] as String? ?? '';
+          if (content.isEmpty) continue;
+          _messages.add(role == 'assistant'
+              ? ChatMessage.assistant(content)
+              : ChatMessage.user(content));
+        }
+      });
+      _scrollToBottom();
+    } catch (_) {
+      // History load is best-effort — stay on greeting.
+    }
   }
 
   @override

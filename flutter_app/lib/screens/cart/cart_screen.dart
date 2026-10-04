@@ -108,9 +108,14 @@ class _CartScreenState extends State<CartScreen> {
             ),
         ],
       ),
-      body: RefreshIndicator(
-        onRefresh: _load,
-        child: _buildBody(context),
+      body: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 900),
+          child: RefreshIndicator(
+            onRefresh: _load,
+            child: _buildBody(context),
+          ),
+        ),
       ),
       bottomNavigationBar:
           _cart != null && _cart!.items.isNotEmpty ? _checkoutBar() : null,

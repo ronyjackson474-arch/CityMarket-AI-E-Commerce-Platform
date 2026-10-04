@@ -61,7 +61,10 @@ class _OrdersScreenState extends State<OrdersScreen> {
     final isLoggedIn = context.watch<AppProvider>().isLoggedIn;
     return Scaffold(
       appBar: AppBar(title: const Text('My Orders')),
-      body: RefreshIndicator(
+      body: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 900),
+          child: RefreshIndicator(
         onRefresh: _load,
         child: !isLoggedIn
             ? ListView(
@@ -102,6 +105,8 @@ class _OrdersScreenState extends State<OrdersScreen> {
                             itemBuilder: (_, i) =>
                                 _orderCard(_orders[i]),
                           ),
+      ),
+        ),
       ),
     );
   }

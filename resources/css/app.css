@@ -113,10 +113,17 @@ body {
    ============================================================ */
 
 /* Crisp image rendering — no smoothing blur when sources are >= display size */
-.product-img {
+.product-img,
+.card-img {
     image-rendering: -webkit-optimize-contrast;
     backface-visibility: hidden;
     transform: translateZ(0);
+}
+
+/* Subtle clarity/attractiveness polish — no heavy filters, just pop */
+.card-img,
+.product-img {
+    filter: saturate(1.06) contrast(1.03);
 }
 /* Hover zoom without blur: scale from a sharper base */
 .zoom-img img.product-img,
@@ -544,33 +551,11 @@ img { background-color: #f8fafc; }
    PREMIUM PRODUCT CARD — advanced effects
    ============================================================ */
 
-/* Animated conic gradient ring on card hover */
+/* Card hover ring — REMOVED (#14587): the conic rainbow gradient painted over
+   the card face on hover and looked like a broken "AR" effect. Cards keep a
+   clean subtle hover (shadow + lift via Tailwind classes on the card itself). */
 .pc-ring {
     position: relative;
-    isolation: isolate;
-}
-.pc-ring::before {
-    content: '';
-    position: absolute;
-    inset: -1px;
-    z-index: -1;
-    border-radius: inherit;
-    background: conic-gradient(from var(--ring-angle, 0deg), #dc2626, #a855f7, #06b6d4, #f59e0b, #dc2626);
-    opacity: 0;
-    transition: opacity 0.35s ease;
-}
-@property --ring-angle {
-    syntax: '<angle>';
-    initial-value: 0deg;
-    inherits: false;
-}
-.pc-ring:hover::before {
-    opacity: 1;
-    animation: ringSpin 3s linear infinite;
-}
-@keyframes ringSpin { to { --ring-angle: 360deg; } }
-@supports not (background: conic-gradient(from 0deg, red, blue)) {
-    .pc-ring::before { background: linear-gradient(120deg, #dc2626, #a855f7, #06b6d4, #dc2626); background-size: 300% 300%; animation: gradientShift 6s ease infinite; }
 }
 
 /* Spotlight follow on card (JS updates --mx / --my) */
@@ -598,6 +583,14 @@ img { background-color: #f8fafc; }
 }
 .pc-img-loaded ~ .pc-img-skel,
 .pc-img-done { opacity: 0; pointer-events: none; }
+
+/* Safety: never leave the skeleton stuck over the image — hide it shortly after paint.
+   (If an image loads from cache the onload may not refire; images must always show.) */
+.pc-img-skel { animation: shimmer 1.5s infinite, skelAutoHide 0s linear 2.5s forwards; }
+@keyframes skelAutoHide { to { opacity: 0; visibility: hidden; } }
+
+/* Broken-image fallback icon */
+.img-failed ~ .img-fallback { display: flex !important; }
 
 /* Image parallax on hover (opposite drift for depth) */
 .pc-depth img { transition: transform 0.7s cubic-bezier(0.16, 1, 0.3, 1), filter 0.5s ease; }

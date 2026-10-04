@@ -59,6 +59,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Account
     Route::put('account/profile', [StorefrontApiController::class, 'updateProfile']);
+    Route::put('auth/profile', [StorefrontApiController::class, 'updateProfile']); // alias for Flutter app
     Route::post('account/change-password', [StorefrontApiController::class, 'changePassword']);
     Route::post('account/deactivate', [\App\Http\Controllers\Api\AuthExtendedController::class, 'deactivate']);
     Route::post('auth/token/refresh', [\App\Http\Controllers\Api\AuthExtendedController::class, 'refreshToken']);
@@ -91,6 +92,7 @@ Route::middleware('auth:sanctum')->group(function () {
     // AI Chat
     Route::get('chat/conversations', [ChatController::class, 'conversations']);
     Route::post('chat/send', [ChatController::class, 'send']);
+    Route::get('chat/conversations/{conversationId}/messages', [ChatController::class, 'messages']);
 
     // Recommendations
     Route::get('recommendations', [RecommendationController::class, 'index']);

@@ -14,6 +14,7 @@ class CategoryRequest extends FormRequest
             'description' => ['nullable', 'string'],
             'icon' => ['nullable', 'string', 'max:50'],
             'image' => ['nullable', 'string', 'max:500'],
+            'image_file' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
             'is_active' => ['nullable', 'boolean'],
             'position' => ['nullable', 'integer', 'min:0'],
         ];

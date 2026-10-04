@@ -59,6 +59,17 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  /// Unread notification count for the app-bar bell (guests → 0).
+  Future<int> _unreadNotifications() async {
+    try {
+      final res = await _api.getNotifications();
+      final meta = res['meta'] as Map<String, dynamic>?;
+      return (meta?['unread'] ?? 0) as int;
+    } catch (_) {
+      return 0;
+    }
+  }
+
   Future<void> _refresh() async {
     setState(() => _future = _loadHome());
     await _future;
@@ -130,6 +141,50 @@ class _HomeScreenState extends State<HomeScreen> {
                             icon: const Icon(Icons.support_agent_rounded,
                                 color: Colors.white),
                             tooltip: 'AI Assistant',
+                          ),
+                          FutureBuilder<int>(
+                            future: _unreadNotifications(),
+                            builder: (context, snap) {
+                              final count = snap.data ?? 0;
+                              return Stack(
+                                clipBehavior: Clip.none,
+                                children: [
+                                  IconButton(
+                                    onPressed: () =>
+                                        Nav.toNotifications(context),
+                                    icon: const Icon(
+                                        Icons.notifications_none_rounded,
+                                        color: Colors.white),
+                                    tooltip: 'Notifications',
+                                  ),
+                                  if (count > 0)
+                                    Positioned(
+                                      right: 6,
+                                      top: 8,
+                                      child: Container(
+                                        padding: const EdgeInsets.all(4),
+                                        decoration: const BoxDecoration(
+                                          color: AppTheme.danger,
+                                          shape: BoxShape.circle,
+                                        ),
+                                        constraints: const BoxConstraints(
+                                          minWidth: 18,
+                                          minHeight: 18,
+                                        ),
+                                        child: Text(
+                                          count > 9 ? '9+' : '$count',
+                                          textAlign: TextAlign.center,
+                                          style: const TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 10,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                ],
+                              );
+                            },
                           ),
                         ],
                       ),
@@ -706,8 +761,10 @@ class _HorizontalProductScroll extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final double cardWidth = MediaQuery.of(context).size.width >= 600 ? 200 : 158;
+    final double railHeight = MediaQuery.of(context).size.width >= 600 ? 300 : 262;
     return SizedBox(
-      height: 262,
+      height: railHeight,
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -716,7 +773,7 @@ class _HorizontalProductScroll extends StatelessWidget {
         itemBuilder: (context, i) {
           final p = products[i];
           return SizedBox(
-            width: 158,
+            width: cardWidth,
             child: ProductCard(product: p, onTap: () => onProduct(p)),
           );
         },

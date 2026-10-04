@@ -26,6 +26,20 @@ class ChatController extends Controller
         return response()->json(['data' => $conversations]);
     }
 
+    public function messages(Request $request, int $conversationId)
+    {
+        $conversation = ChatConversation::where('id', $conversationId)
+            ->where('user_id', $request->user()->id)
+            ->firstOrFail();
+
+        $messages = ChatMessage::where('conversation_id', $conversation->id)
+            ->orderBy('id')
+            ->limit(100)
+            ->get(['id', 'role', 'content', 'created_at']);
+
+        return response()->json(['data' => $messages]);
+    }
+
     public function send(Request $request)
     {
         $validated = $request->validate([

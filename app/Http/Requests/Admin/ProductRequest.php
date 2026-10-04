@@ -25,6 +25,8 @@ class ProductRequest extends FormRequest
             'is_flash_deal' => ['nullable', 'boolean'],
             'is_active' => ['nullable', 'boolean'],
             'images' => ['nullable', 'string'],
+            'image_files' => ['nullable', 'array', 'max:6'],
+            'image_files.*' => ['image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
         ];
     }
 }

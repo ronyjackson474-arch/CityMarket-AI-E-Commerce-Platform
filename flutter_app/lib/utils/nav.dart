@@ -5,6 +5,9 @@ import '../screens/account/addresses_screen.dart';
 import '../screens/account/edit_profile_screen.dart';
 import '../screens/account/wallet_screen.dart';
 import '../screens/account/about_screen.dart';
+import '../screens/account/notifications_screen.dart';
+import '../screens/auth/forgot_password_screen.dart';
+import '../screens/auth/reset_password_screen.dart';
 import '../screens/ai/ai_chat_screen.dart';
 import '../screens/ai/ai_search_screen.dart';
 import '../screens/cart/checkout_screen.dart';
@@ -101,6 +104,25 @@ class Nav {
   static Future<void> toAbout(BuildContext c) => Navigator.push(
         c,
         MaterialPageRoute(builder: (_) => const AboutScreen()),
+      );
+
+  static Future<void> toNotifications(BuildContext c) => Navigator.push(
+        c,
+        MaterialPageRoute(builder: (_) => const NotificationsScreen()),
+      );
+
+  static Future<void> toForgotPassword(BuildContext c) => Navigator.push(
+        c,
+        MaterialPageRoute(builder: (_) => const ForgotPasswordScreen()),
+      );
+
+  static Future<void> toResetPassword(BuildContext c,
+          {String email = '', String token = ''}) =>
+      Navigator.push(
+        c,
+        MaterialPageRoute(
+          builder: (_) => ResetPasswordScreen(email: email, token: token),
+        ),
       );
 
   static Future<void> toAiSearch(BuildContext c) => Navigator.push(

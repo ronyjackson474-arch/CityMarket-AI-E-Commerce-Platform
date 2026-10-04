@@ -28,7 +28,11 @@ class CategoryController extends Controller
 
     public function store(CategoryRequest $request)
     {
-        Category::create($request->validated());
+        $data = $request->validated();
+        $data['image'] = $this->resolveImage($request, $data['image'] ?? null);
+        unset($data['image_file']);
+
+        Category::create($data);
 
         return redirect()->route('admin.categories.index')
             ->with('success', 'Category created.');
@@ -43,7 +47,11 @@ class CategoryController extends Controller
 
     public function update(CategoryRequest $request, Category $category)
     {
-        $category->update($request->validated());
+        $data = $request->validated();
+        $data['image'] = $this->resolveImage($request, $data['image'] ?? null);
+        unset($data['image_file']);
+
+        $category->update($data);
 
         return redirect()->route('admin.categories.index')
             ->with('success', 'Category updated.');
@@ -55,5 +63,17 @@ class CategoryController extends Controller
 
         return redirect()->route('admin.categories.index')
             ->with('success', 'Category deleted.');
+    }
+
+    /**
+     * Uploaded file wins over the URL field; otherwise keep the URL.
+     */
+    private function resolveImage(CategoryRequest $request, ?string $url): ?string
+    {
+        if ($request->hasFile('image_file') && $request->file('image_file')->isValid()) {
+            return '/storage/' . $request->file('image_file')->store('categories', 'public');
+        }
+
+        return $url;
     }
 }

@@ -17,19 +17,30 @@
     @endauth
 
     <a href="{{ route('product', $product->slug) }}" class="block">
-        <div class="aspect-square bg-white relative overflow-hidden">
-            @if($product->primary_image)
-                <img src="{{ $product->primary_image }}" alt="{{ $product->name }}"
-                    width="800" height="800" decoding="async" fetchpriority="auto"
-                    class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.04]" loading="lazy"
-                    onload="this.parentElement.classList.add('pc-img-done')">
+        <div class="aspect-square bg-gradient-to-b from-white to-slate-50 relative overflow-hidden">
+            @php
+                // Sharper card images: load the 600px square Unsplash variant (cards render ~400px max)
+                $cardImg = $product->primary_image
+                    ? preg_replace('/([?&])w=1200/', '$1w=600', preg_replace('/([?&])h=1200/', '$1h=600', $product->primary_image))
+                    : null;
+            @endphp
+            @if($cardImg)
+                <img src="{{ $cardImg }}" alt="{{ $product->name }}"
+                    width="600" height="600" decoding="async"
+                    class="w-full h-full object-cover card-img transition-transform duration-500 group-hover:scale-[1.05]" loading="lazy"
+                    onload="this.parentElement.classList.add('pc-img-done')"
+                    onerror="this.style.display='none'; this.parentElement.classList.add('pc-img-done'); this.parentElement.classList.add('img-failed')">
             @else
                 <div class="w-full h-full pc-placeholder flex items-center justify-center text-ink-400">
                     <svg class="w-14 h-14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
                 </div>
             @endif
-            <!-- Skeleton shimmer while image loads -->
-            <div class="pc-img-skel"></div>
+            <!-- Skeleton shimmer while image loads (auto-hides as safety) -->
+            <div class="pc-img-skel" data-skel-timeout="1"></div>
+            <!-- Fallback icon shown if image fails -->
+            <div class="absolute inset-0 hidden items-center justify-center text-ink-300 img-fallback">
+                <svg class="w-14 h-14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+            </div>
             <!-- Discount badge -->
             @if($product->discount_percent > 0)
                 <span class="absolute top-2.5 left-2.5 bg-gradient-to-r from-brand-600 to-brand-500 text-white text-[11px] font-bold px-2 py-1 rounded-md shadow-md">-{{ $product->discount_percent }}%</span>

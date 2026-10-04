@@ -256,6 +256,7 @@
     </section>
 
     <!-- Featured Products -->
+    @if($featured->isNotEmpty())
     <section class="mb-10 reveal" data-reveal="up">
         <div class="flex items-center justify-between mb-5">
             <div>
@@ -274,6 +275,7 @@
             @endforeach
         </div>
     </section>
+    @endif
 
     <!-- Trending Now -->
     <section class="mb-10 reveal" data-reveal="up">

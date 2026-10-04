@@ -236,67 +236,10 @@
         });
     }
 
-    /* ---------- AR Product Viewer ---------- */
+    /* ---------- AR Product Viewer (removed — kept as no-op for safety) ---------- */
     function initARViewer() {
-        // Open
-        document.querySelectorAll('[data-ar-open]').forEach(function (btn) {
-            btn.addEventListener('click', function (e) {
-                e.preventDefault();
-                const modal = document.getElementById('ar-modal');
-                if (!modal) return;
-                modal.classList.add('open');
-                document.body.style.overflow = 'hidden';
-                initARDrag();
-            });
-        });
-        // Close
-        document.querySelectorAll('[data-ar-close]').forEach(function (btn) {
-            btn.addEventListener('click', function () {
-                const modal = document.getElementById('ar-modal');
-                if (modal) modal.classList.remove('open');
-                document.body.style.overflow = '';
-            });
-        });
-        // Close on backdrop click
-        const modal = document.getElementById('ar-modal');
-        if (modal) {
-            modal.addEventListener('click', function (e) {
-                if (e.target === modal) {
-                    modal.classList.remove('open');
-                    document.body.style.overflow = '';
-                }
-            });
-        }
+        // AR feature removed from the storefront; nothing to initialize.
     }
-
-    let arAngle = 0, arDragging = false, arStartX = 0, arStartAngle = 0;
-    function initARDrag() {
-        const card = document.getElementById('ar-product-card');
-        if (!card) return;
-        card.classList.remove('ar-auto-rotate');
-
-        card.addEventListener('mousedown', arDragStart);
-        card.addEventListener('touchstart', arDragStart, { passive: true });
-        document.addEventListener('mousemove', arDragMove);
-        document.addEventListener('touchmove', arDragMove, { passive: true });
-        document.addEventListener('mouseup', arDragEnd);
-        document.addEventListener('touchend', arDragEnd);
-    }
-    function arDragStart(e) {
-        arDragging = true;
-        arStartX = e.touches ? e.touches[0].clientX : e.clientX;
-        arStartAngle = arAngle;
-        const card = document.getElementById('ar-product-card');
-        if (card) card.classList.remove('ar-auto-rotate');
-    }
-    function arDragMove(e) {
-        if (!arDragging) return;
-        const x = e.touches ? e.touches[0].clientX : e.clientX;
-        arAngle = arStartAngle + (x - arStartX) * 0.5;
-        const card = document.getElementById('ar-product-card');
-        if (card) card.style.transform = 'rotateY(' + arAngle + 'deg)';
-    }
-    function arDragEnd() { arDragging = false; }
 
     /* ---------- Parallax ---------- */
     function initParallax() {

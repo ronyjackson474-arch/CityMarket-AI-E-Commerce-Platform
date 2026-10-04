@@ -13,10 +13,10 @@
     </nav>
 
     <div class="grid lg:grid-cols-12 gap-8 mb-12">
-        <!-- Image Gallery + 3D/AR Viewer -->
+        <!-- Image Gallery -->
         <div class="lg:col-span-5">
             <div class="lg:sticky lg:top-24" data-reveal="right">
-                <div class="bg-white rounded-2xl border border-ink-100 overflow-hidden aspect-square mb-3 relative group ar-stage gallery-main"
+                <div class="bg-white rounded-3xl border border-ink-100 shadow-xl shadow-ink-900/5 overflow-hidden aspect-square mb-4 relative group gallery-main transition-shadow duration-300 hover:shadow-2xl hover:shadow-ink-900/10"
                     onclick="openLightbox(window.__galleryIndex ?? 0)">
                     @if($product->images->isNotEmpty())
                         @if($product->discount_percent > 0)
@@ -25,7 +25,8 @@
                         @if($product->is_flash_deal)
                             <div class="absolute top-3 right-3 z-10 bg-gradient-to-r from-orange-500 to-rose-500 text-white text-xs font-bold px-2.5 py-1 rounded-lg shadow-lg flex items-center gap-1 animate-pulse">⚡ FLASH</div>
                         @endif
-                        <img id="main-product-image" src="{{ $product->images->first()->image_path }}" alt="{{ $product->name }}" width="1200" height="1200" decoding="async" fetchpriority="high" class="w-full h-full object-cover">
+                        <img id="main-product-image" src="{{ $product->images->first()->image_path }}" alt="{{ $product->name }}" width="1200" height="1200" decoding="async" fetchpriority="high" class="w-full h-full object-cover product-img"
+                            onerror="this.src='/images/products/placeholder-product.svg'; this.onerror=null;">
                         <!-- Zoom hint -->
                         <div class="absolute bottom-3 left-3 z-10 bg-white/85 backdrop-blur text-ink-700 text-[10px] font-bold px-2.5 py-1 rounded-full shadow flex items-center gap-1 pointer-events-none">
                             <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v6m3-3H7"/></svg>
@@ -36,19 +37,18 @@
                             <svg class="w-24 h-24" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
                         </div>
                     @endif
-                    <!-- AR View Button (floating) -->
-                    <button data-ar-open class="absolute bottom-3 right-3 z-20 bg-ink-900/90 backdrop-blur text-white text-xs font-bold px-4 py-2.5 rounded-xl shadow-lg flex items-center gap-2 hover:bg-brand-600 transition-all magnetic-btn animate-glow">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"/><path stroke-linecap="round" stroke-linejoin="round" d="M3 9l9-6 9 6M3 9v6m18-6v6"/></svg>
-                        View in AR
-                    </button>
                 </div>
                 @if($product->images->count() > 1)
                     <div class="grid grid-cols-5 gap-2" id="gallery-thumbs">
                         @foreach($product->images as $img)
+                            @php
+                                $thumbSrc = preg_replace('/([?&])w=1200/', '$1w=200', $img->image_path);
+                                $thumbSrc = preg_replace('/([?&])h=1200/', '$1h=200', $thumbSrc);
+                            @endphp
                             <button onclick="setGalleryImage({{ $loop->index }}, this); event.stopPropagation();"
                                 data-idx="{{ $loop->index }}"
                                 class="gallery-thumb aspect-square {{ $loop->first ? 'active' : '' }}">
-                                <img src="{{ $img->image_path }}" alt="{{ $product->name }} view {{ $loop->iteration }}" width="200" height="200" decoding="async" loading="lazy" class="product-img">
+                                <img src="{{ $thumbSrc }}" alt="{{ $product->name }} view {{ $loop->iteration }}" width="200" height="200" decoding="async" loading="lazy" class="product-img">
                             </button>
                         @endforeach
                     </div>
@@ -70,50 +70,6 @@
                 </div>
             </div>
         </div>
-
-        <!-- AR Modal (immersive product viewer) -->
-        @if($product->images->isNotEmpty())
-        <div id="ar-modal" class="ar-modal-backdrop">
-            <div class="ar-modal-panel relative w-full max-w-md mx-4">
-                <!-- Close button -->
-                <button data-ar-close class="absolute -top-12 right-0 w-10 h-10 rounded-full bg-white/10 backdrop-blur flex items-center justify-center text-white hover:bg-white/30 transition-all z-10">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
-                </button>
-                <!-- AR header -->
-                <div class="text-center mb-4">
-                    <span class="inline-block bg-white/10 backdrop-blur text-white text-xs font-bold px-3 py-1.5 rounded-full mb-2 uppercase tracking-widest">AR Preview</span>
-                    <h3 class="text-lg font-bold text-white">{{ $product->name }}</h3>
-                    <p class="text-xs text-white/60 mt-1">Drag to rotate · Auto-rotating</p>
-                </div>
-                <!-- 3D product stage -->
-                <div class="ar-stage h-72 flex items-center justify-center">
-                    <div id="ar-product-card" class="ar-product-card ar-auto-rotate relative w-48 h-48 cursor-grab active:cursor-grabbing">
-                        <div class="ar-face ar-face-front shadow-2xl rounded-2xl overflow-hidden">
-                            <img src="{{ $product->images->first()->image_path }}" alt="{{ $product->name }}" class="w-full h-full object-cover">
-                        </div>
-                        <div class="ar-face ar-face-back shadow-2xl rounded-2xl overflow-hidden bg-ink-800 flex items-center justify-center">
-                            @if($product->images->count() > 1)
-                                <img src="{{ $product->images->skip(1)->first()->image_path }}" alt="" class="w-full h-full object-cover" style="transform: scaleX(-1);">
-                            @else
-                                <img src="{{ $product->images->first()->image_path }}" alt="" class="w-full h-full object-cover" style="transform: scaleX(-1);">
-                            @endif
-                        </div>
-                    </div>
-                </div>
-                <!-- Floating particles -->
-                <div class="absolute top-10 left-8 w-6 h-6 rounded-full bg-brand-500/20 animate-float"></div>
-                <div class="absolute bottom-20 right-8 w-8 h-8 rounded-full bg-purple-500/20 animate-float-slow"></div>
-                <div class="absolute top-20 right-12 w-4 h-4 rounded-full bg-cyan-500/30 animate-float-fast"></div>
-                <!-- AR controls -->
-                <div class="flex justify-center gap-3 mt-4">
-                    <button onclick="const c=document.getElementById('ar-product-card'); c.classList.toggle('ar-auto-rotate'); if(c.classList.contains('ar-auto-rotate')){c.style.transform='';}" class="bg-white/10 backdrop-blur text-white text-xs font-semibold px-4 py-2 rounded-lg hover:bg-white/20 transition-all magnetic-btn">
-                        ↻ Toggle Rotate
-                    </button>
-                    <button data-ar-close class="bg-brand-600 text-white text-xs font-semibold px-4 py-2 rounded-lg hover:bg-brand-500 transition-all magnetic-btn">Close</button>
-                </div>
-            </div>
-        </div>
-        @endif
 
         <!-- Details -->
         <div class="lg:col-span-7" data-reveal="left">
@@ -144,11 +100,19 @@
             </div>
 
             <!-- Price -->
-            <div class="flex items-baseline gap-3 mb-6 pb-6 border-b border-ink-100">
-                <span class="text-4xl font-bold text-ink-900">₹{{ number_format($product->effective_price) }}</span>
+            <div class="rounded-2xl bg-gradient-to-r from-rose-50 to-orange-50 border border-rose-100 p-5 mb-6">
+                <div class="flex items-baseline gap-3 flex-wrap">
+                    <span class="text-4xl font-extrabold bg-gradient-to-r from-ink-900 to-brand-700 bg-clip-text text-transparent">₹{{ number_format($product->effective_price) }}</span>
+                    @if($product->discount_percent > 0)
+                        <span class="text-xl text-ink-400 line-through">₹{{ number_format($product->price) }}</span>
+                        <span class="bg-gradient-to-r from-rose-600 to-brand-600 text-white text-sm font-bold px-3 py-1.5 rounded-full shadow-md shadow-rose-200 badge-slide">Save ₹{{ number_format($product->price - $product->effective_price) }} ({{ $product->discount_percent }}% OFF)</span>
+                    @endif
+                </div>
                 @if($product->discount_percent > 0)
-                    <span class="text-xl text-ink-400 line-through">₹{{ number_format($product->price) }}</span>
-                    <span class="bg-rose-100 text-rose-700 text-sm font-bold px-2 py-1 rounded-lg">Save ₹{{ number_format($product->price - $product->effective_price) }} ({{ $product->discount_percent }}%)</span>
+                    <p class="text-xs text-rose-600 font-medium mt-2 flex items-center gap-1">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
+                        Limited time offer — grab it before it's gone!
+                    </p>
                 @endif
             </div>
 

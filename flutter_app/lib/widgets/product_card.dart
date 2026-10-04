@@ -236,25 +236,47 @@ class ProductGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final width = MediaQuery.of(context).size.width;
+    // Phone: 2 | Tablet: 3 | Desktop 1024+: 4 | Wide 1400+: 5
+    final int columns = width >= 1400
+        ? 5
+        : width >= 1024
+            ? 4
+            : width >= 600
+                ? 3
+                : 2;
+    // Centered max width on desktop so cards don't stretch absurdly.
+    final double maxGridWidth = width >= 1024 ? 1200 : double.infinity;
+    final EdgeInsets gridPadding = EdgeInsets.only(
+      left: width >= 1024 ? (width - 1200 > 0 ? (width - 1200) / 2 : 32) : padding.left,
+      right: width >= 1024 ? (width - 1200 > 0 ? (width - 1200) / 2 : 32) : padding.right,
+      top: padding.top,
+      bottom: padding.bottom,
+    );
     return AnimationLimiter(
-      child: GridView.builder(
-        shrinkWrap: shrinkWrap,
-        physics: physics,
-        padding: padding,
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 2,
-          mainAxisSpacing: 12,
-          crossAxisSpacing: 12,
-          childAspectRatio: 0.68,
+      child: Center(
+        child: ConstrainedBox(
+          constraints: BoxConstraints(maxWidth: maxGridWidth),
+          child: GridView.builder(
+            shrinkWrap: shrinkWrap,
+            physics: physics,
+            padding: gridPadding,
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: columns,
+              mainAxisSpacing: 12,
+              crossAxisSpacing: 12,
+              childAspectRatio: 0.68,
+            ),
+            itemCount: products.length,
+            itemBuilder: (context, i) {
+              final p = products[i];
+              return ProductCard(
+                product: p,
+                onTap: onTap != null ? () => onTap!(p) : null,
+              );
+            },
+          ),
         ),
-        itemCount: products.length,
-        itemBuilder: (context, i) {
-          final p = products[i];
-          return ProductCard(
-            product: p,
-            onTap: onTap != null ? () => onTap!(p) : null,
-          );
-        },
       ),
     );
   }

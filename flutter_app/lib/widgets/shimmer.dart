@@ -39,44 +39,58 @@ class ProductGridSkeleton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GridView.builder(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      padding: const EdgeInsets.all(16),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
-        mainAxisSpacing: 12,
-        crossAxisSpacing: 12,
-        childAspectRatio: 0.72,
-      ),
-      itemCount: itemCount,
-      itemBuilder: (_, __) => Shimmer.fromColors(
-        baseColor: Colors.grey.shade300,
-        highlightColor: Colors.grey.shade100,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Expanded(
-              child: Container(
-                decoration: BoxDecoration(
-                  color: Colors.grey.shade300,
-                  borderRadius: BorderRadius.circular(16),
+    final width = MediaQuery.of(context).size.width;
+    final int columns = width >= 1400
+        ? 5
+        : width >= 1024
+            ? 4
+            : width >= 600
+                ? 3
+                : 2;
+    return Center(
+      child: ConstrainedBox(
+        constraints: BoxConstraints(
+            maxWidth: width >= 1024 ? 1200 : double.infinity),
+        child: GridView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          padding: const EdgeInsets.all(16),
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: columns,
+            mainAxisSpacing: 12,
+            crossAxisSpacing: 12,
+            childAspectRatio: 0.72,
+          ),
+          itemCount: itemCount,
+          itemBuilder: (_, __) => Shimmer.fromColors(
+            baseColor: Colors.grey.shade300,
+            highlightColor: Colors.grey.shade100,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade300,
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                  ),
                 ),
-              ),
+                const SizedBox(height: 8),
+                Container(
+                  height: 12,
+                  width: double.infinity,
+                  color: Colors.grey.shade300,
+                ),
+                const SizedBox(height: 6),
+                Container(
+                  height: 12,
+                  width: 80,
+                  color: Colors.grey.shade300,
+                ),
+              ],
             ),
-            const SizedBox(height: 8),
-            Container(
-              height: 12,
-              width: double.infinity,
-              color: Colors.grey.shade300,
-            ),
-            const SizedBox(height: 6),
-            Container(
-              height: 12,
-              width: 80,
-              color: Colors.grey.shade300,
-            ),
-          ],
+          ),
         ),
       ),
     );

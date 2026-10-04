@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 
 import '../../models/user.dart';
 import '../../providers/app_provider.dart';
+import '../../services/api_service.dart';
 import '../../theme/app_theme.dart';
 import '../../utils/auth_guard.dart';
 import '../../utils/format.dart';
@@ -21,13 +22,18 @@ class AccountScreen extends StatelessWidget {
     final app = context.watch<AppProvider>();
     return Scaffold(
       body: SafeArea(
-        child: RefreshIndicator(
-          onRefresh: () async => app.refreshUser(),
-          child: ListView(
-            padding: EdgeInsets.zero,
-            children: [
-              app.isLoggedIn ? _loggedIn(app) : _guest(context),
-            ],
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 800),
+            child: RefreshIndicator(
+              onRefresh: () async => app.refreshUser(),
+              child: ListView(
+                padding: EdgeInsets.zero,
+                children: [
+                  app.isLoggedIn ? _loggedIn(app) : _guest(context),
+                ],
+              ),
+            ),
           ),
         ),
       ),
@@ -149,6 +155,11 @@ class AccountScreen extends StatelessWidget {
                     onTap: () => Nav.toAddresses(context),
                   ),
                   _MenuItem(
+                    icon: Icons.lock_outline_rounded,
+                    label: 'Change Password',
+                    onTap: () => _showChangePasswordSheet(context),
+                  ),
+                  _MenuItem(
                     icon: Icons.support_agent_rounded,
                     label: 'AI Assistant',
                     onTap: () => Nav.toAiChat(context),
@@ -193,6 +204,128 @@ class AccountScreen extends StatelessWidget {
   void _goToCart(BuildContext context) {
     // Cart is a bottom-nav tab — pop to root.
     Navigator.of(context).popUntil((r) => r.isFirst);
+  }
+
+  void _showChangePasswordSheet(BuildContext context) {
+    final currentCtrl = TextEditingController();
+    final newCtrl = TextEditingController();
+    final confirmCtrl = TextEditingController();
+    final api = ApiService();
+    bool saving = false;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (sheetCtx) => StatefulBuilder(
+        builder: (sheetCtx, setSheetState) => Padding(
+          padding: EdgeInsets.only(
+            left: 20,
+            right: 20,
+            top: 24,
+            bottom: MediaQuery.of(sheetCtx).viewInsets.bottom + 24,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text('Change Password',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+              const SizedBox(height: 20),
+              TextField(
+                controller: currentCtrl,
+                obscureText: true,
+                decoration: const InputDecoration(
+                  labelText: 'Current password',
+                  prefixIcon: Icon(Icons.lock_outline, size: 20),
+                ),
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: newCtrl,
+                obscureText: true,
+                decoration: const InputDecoration(
+                  labelText: 'New password',
+                  prefixIcon: Icon(Icons.lock_reset, size: 20),
+                ),
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: confirmCtrl,
+                obscureText: true,
+                decoration: const InputDecoration(
+                  labelText: 'Confirm new password',
+                  prefixIcon: Icon(Icons.lock_reset, size: 20),
+                ),
+              ),
+              const SizedBox(height: 20),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppTheme.primary,
+                    foregroundColor: Colors.white,
+                    minimumSize: const Size.fromHeight(48),
+                  ),
+                  onPressed: saving
+                      ? null
+                      : () async {
+                          if (newCtrl.text.length < 8) {
+                            ScaffoldMessenger.of(sheetCtx).showSnackBar(
+                              const SnackBar(
+                                  content: Text(
+                                      'New password must be at least 8 characters')),
+                            );
+                            return;
+                          }
+                          if (newCtrl.text != confirmCtrl.text) {
+                            ScaffoldMessenger.of(sheetCtx).showSnackBar(
+                              const SnackBar(
+                                  content:
+                                      Text('New passwords do not match')),
+                            );
+                            return;
+                          }
+                          setSheetState(() => saving = true);
+                          try {
+                            await api.changePassword(
+                              currentPassword: currentCtrl.text,
+                              newPassword: newCtrl.text,
+                              newPasswordConfirmation: confirmCtrl.text,
+                            );
+                            if (sheetCtx.mounted) {
+                              Navigator.pop(sheetCtx);
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                    content:
+                                        Text('Password changed successfully ✓')),
+                              );
+                            }
+                          } catch (e) {
+                            ScaffoldMessenger.of(sheetCtx).showSnackBar(
+                              SnackBar(content: Text(e.toString())),
+                            );
+                          } finally {
+                            setSheetState(() => saving = false);
+                          }
+                        },
+                  child: saving
+                      ? const SizedBox(
+                          width: 22,
+                          height: 22,
+                          child: CircularProgressIndicator(
+                              strokeWidth: 2, color: Colors.white),
+                        )
+                      : const Text('Update Password'),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 
   void _confirmLogout(BuildContext context) async {

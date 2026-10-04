@@ -76,7 +76,10 @@ class _WishlistScreenState extends State<WishlistScreen> {
     final isLoggedIn = context.watch<AppProvider>().isLoggedIn;
     return Scaffold(
       appBar: AppBar(title: const Text('Wishlist')),
-      body: RefreshIndicator(
+      body: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 900),
+          child: RefreshIndicator(
         onRefresh: _load,
         child: !isLoggedIn
             ? ListView(
@@ -113,6 +116,8 @@ class _WishlistScreenState extends State<WishlistScreen> {
                             products: _items,
                             onTap: (p) => Nav.toProduct(context, p.slug),
                           ),
+      ),
+        ),
       ),
     );
   }

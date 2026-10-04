@@ -91,6 +91,7 @@ class DashboardController extends Controller
 
     public function storeProduct(Request $request)
     {
+        $this->validateUploads($request);
         $data = $this->validateProduct($request);
 
         $product = $this->vendor()->products()->create($data + ['is_active' => false]);
@@ -114,6 +115,7 @@ class DashboardController extends Controller
     {
         $this->authorizeProduct($product);
 
+        $this->validateUploads($request);
         $data = $this->validateProduct($request, $product->id);
 
         // Edits to an approved product push it back into review.
@@ -258,18 +260,52 @@ class DashboardController extends Controller
         ]) + ['specifications' => null];
     }
 
+    protected function storeUploads(Request $request): array
+    {
+        $this->validateUploads($request);
+
+        if (!$request->hasFile('image_files')) {
+            return [];
+        }
+
+        $paths = [];
+        foreach ($request->file('image_files') as $file) {
+            if (!$file->isValid()) {
+                continue;
+            }
+            $paths[] = '/storage/' . $file->store('products', 'public');
+        }
+
+        return $paths;
+    }
+
+    protected function validateUploads(Request $request): void
+    {
+        if ($request->hasFile('image_files')) {
+            $request->validate([
+                'image_files'   => ['array', 'max:6'],
+                'image_files.*' => ['image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
+            ]);
+        }
+    }
+
     protected function syncImages(Product $product, Request $request): void
     {
         $raw = $request->input('images', '');
         $urls = collect(is_array($raw) ? $raw : array_filter(array_map('trim', explode(',', (string) $raw))))
-            ->filter(fn ($u) => filter_var($u, FILTER_VALIDATE_URL))
+            ->filter(fn ($u) => filter_var($u, FILTER_VALIDATE_URL) || str_starts_with($u, '/storage/'))
+            ->values();
+
+        $uploads = collect($this->storeUploads($request));
+
+        $paths = $urls->merge($uploads)
             ->unique()
             ->values();
 
         $product->images()->delete();
 
-        $urls->each(fn ($url, $i) => $product->images()->create([
-            'image_path' => $url,
+        $paths->each(fn ($path, $i) => $product->images()->create([
+            'image_path' => $path,
             'is_primary' => $i === 0,
             'position'   => $i,
         ]));

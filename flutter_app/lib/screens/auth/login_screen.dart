@@ -6,6 +6,7 @@ import '../../providers/app_provider.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/buttons.dart';
 import '../../widgets/states.dart';
+import '../../utils/nav.dart';
 import 'register_screen.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -136,13 +137,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   Align(
                     alignment: Alignment.centerRight,
                     child: TextButton(
-                      onPressed: () {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                              content: Text(
-                                  'Contact support to reset your password.')),
-                        );
-                      },
+                      onPressed: () => Nav.toForgotPassword(context),
                       child: const Text('Forgot password?'),
                     ),
                   ),

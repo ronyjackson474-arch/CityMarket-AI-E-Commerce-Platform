@@ -1,4 +1,4 @@
-<form action="{{ isset($product) ? route('admin.products.update', $product) : route('admin.products.store') }}" method="POST">
+<form action="{{ isset($product) ? route('admin.products.update', $product) : route('admin.products.store') }}" method="POST" enctype="multipart/form-data">
     @csrf
     @if(isset($product)) @method('PUT') @endif
 
@@ -25,8 +25,18 @@
 
             <div class="bg-white rounded-xl border border-ink-100 p-5">
                 <h3 class="font-bold text-ink-900 mb-4">Images</h3>
-                <label class="text-sm font-medium text-ink-700 mb-1 block">Image URLs (comma-separated, first is primary)</label>
+                <div class="border-2 border-dashed border-ink-200 rounded-xl p-3 mb-3 bg-ink-50/50">
+                    <label class="block text-xs font-medium text-ink-600 mb-1.5">📁 Upload files (JPG/PNG/WebP, max 2MB each, up to 6)</label>
+                    <input type="file" name="image_files[]" multiple accept="image/jpeg,image/png,image/webp" id="adminImageFiles"
+                        class="w-full text-sm text-ink-600 file:mr-3 file:px-4 file:py-1.5 file:rounded-lg file:border-0 file:bg-brand-600 file:text-white file:text-xs file:font-semibold file:cursor-pointer hover:file:bg-brand-700 cursor-pointer">
+                    @error('image_files.*')
+                        <p class="text-xs text-red-600 mt-1.5">{{ $message }}</p>
+                    @enderror
+                    <div id="adminImagePreview" class="flex gap-2 mt-2 flex-wrap"></div>
+                </div>
+                <label class="block text-xs font-medium text-ink-600 mb-1">🔗 Ya image URLs (comma-separated, first is primary)</label>
                 <textarea name="images" rows="3" class="w-full px-3 py-2 border border-ink-200 rounded-lg text-sm focus:border-brand-500 outline-none" placeholder="https://...">{{ old('images', isset($product) ? $product->images->pluck('image_path')->implode(', ') : '') }}</textarea>
+                <p class="text-[11px] text-ink-400 mt-1">Upload aur URL dono ek saath bhi chalega.</p>
                 @if(isset($product) && $product->images->isNotEmpty())
                     <div class="flex gap-2 mt-3">
                         @foreach($product->images as $img)
@@ -110,3 +120,22 @@
         <a href="{{ route('admin.products.index') }}" class="text-ink-600 text-sm hover:text-ink-900">Cancel</a>
     </div>
 </form>
+
+<script>
+(function () {
+    var input = document.getElementById('adminImageFiles');
+    var grid = document.getElementById('adminImagePreview');
+    if (!input || !grid) return;
+    input.addEventListener('change', function () {
+        grid.innerHTML = '';
+        Array.from(input.files || []).forEach(function (file) {
+            if (!file.type.startsWith('image/')) return;
+            var img = document.createElement('img');
+            img.alt = file.name;
+            img.className = 'w-16 h-16 object-cover rounded-lg border border-ink-200';
+            img.src = URL.createObjectURL(file);
+            grid.appendChild(img);
+        });
+    });
+})();
+</script>

@@ -310,6 +310,65 @@ class ApiService {
 
   Future<Map<String, dynamic>> getConversations() =>
       _request('GET', '/chat/conversations');
+
+  Future<Map<String, dynamic>> getConversationMessages(int conversationId) =>
+      _request('GET', '/chat/conversations/$conversationId/messages');
+
+  // ── Related products / cart count / coupons ─────────────────────────
+
+  Future<Map<String, dynamic>> getRelatedProducts(String slug) =>
+      _request('GET', '/products/$slug/related');
+
+  Future<Map<String, dynamic>> getCartCount() => _request('GET', '/cart/count');
+
+  Future<Map<String, dynamic>> validateCoupon(String code,
+          {double? subtotal}) =>
+      _request('POST', '/coupons/validate', body: {
+        'code': code,
+        if (subtotal != null) 'subtotal': subtotal,
+      });
+
+  // ── Notifications ───────────────────────────────────────────────────
+
+  Future<Map<String, dynamic>> getNotifications() =>
+      _request('GET', '/notifications');
+
+  Future<void> markNotificationRead(int id) =>
+      _request('POST', '/notifications/$id/read');
+
+  Future<void> markAllNotificationsRead() =>
+      _request('POST', '/notifications/read-all');
+
+  // ── Account security ────────────────────────────────────────────────
+
+  Future<Map<String, dynamic>> changePassword({
+    required String currentPassword,
+    required String newPassword,
+    required String newPasswordConfirmation,
+  }) =>
+      _request('POST', '/account/change-password', body: {
+        'current_password': currentPassword,
+        'new_password': newPassword,
+        'new_password_confirmation': newPasswordConfirmation,
+      });
+
+  // ── Auth recovery ───────────────────────────────────────────────────
+
+  Future<Map<String, dynamic>> forgotPassword(String email) =>
+      _request('POST', '/auth/forgot-password', body: {'email': email});
+
+  Future<Map<String, dynamic>> resetPassword({
+    required String email,
+    required String token,
+    required String password,
+    required String passwordConfirmation,
+  }) =>
+      _request('POST', '/auth/reset-password', body: {
+        'email': email,
+        'token': token,
+        'password': password,
+        'password_confirmation': passwordConfirmation,
+      });
 }
 
 // ── Exceptions ───────────────────────────────────────────────────────

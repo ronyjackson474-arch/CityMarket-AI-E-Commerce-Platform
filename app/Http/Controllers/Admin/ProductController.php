@@ -43,9 +43,9 @@ class ProductController extends Controller
 
         $product = Product::create($data);
 
-        // Attach images
-        if (! empty($data['images'])) {
-            $this->syncImages($product, $data['images']);
+        // Attach images (uploaded files + URLs)
+        if (! empty($data['images']) || $request->hasFile('image_files')) {
+            $this->syncImages($request, $product, $data['images'] ?? '');
         }
 
         return redirect()->route('admin.products.index')
@@ -66,8 +66,8 @@ class ProductController extends Controller
         $data = $request->validated();
         $product->update($data);
 
-        if (isset($data['images'])) {
-            $this->syncImages($product, $data['images']);
+        if (isset($data['images']) || $request->hasFile('image_files')) {
+            $this->syncImages($request, $product, $data['images'] ?? '');
         }
 
         return redirect()->route('admin.products.index')
@@ -95,25 +95,35 @@ class ProductController extends Controller
     }
 
     /**
-     * Sync image URLs provided as a comma-separated string or array.
+     * Sync product images from uploaded files + URLs (comma-separated string or array).
      */
-    private function syncImages(Product $product, string|array $images): void
+    private function syncImages(ProductRequest $request, Product $product, string|array $images): void
     {
         if (is_string($images)) {
             $images = array_filter(array_map('trim', explode(',', $images)));
         }
 
-        if (empty($images)) {
+        $paths = collect($images)->filter(fn ($u) => $u !== '');
+
+        if ($request->hasFile('image_files')) {
+            foreach ($request->file('image_files') as $file) {
+                if ($file->isValid()) {
+                    $paths->push('/storage/' . $file->store('products', 'public'));
+                }
+            }
+        }
+
+        if ($paths->isEmpty()) {
             return;
         }
 
         // Clear existing and re-create (simple Phase 1 approach)
         $product->images()->delete();
 
-        foreach ($images as $i => $url) {
+        foreach ($paths->values()->all() as $i => $path) {
             ProductImage::create([
                 'product_id' => $product->id,
-                'image_path' => $url,
+                'image_path' => $path,
                 'is_primary' => $i === 0,
                 'position' => $i,
             ]);

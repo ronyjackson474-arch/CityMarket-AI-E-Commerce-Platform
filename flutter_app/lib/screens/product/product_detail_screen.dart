@@ -12,6 +12,7 @@ import '../../utils/format.dart';
 import '../../utils/nav.dart';
 import '../../widgets/app_network_image.dart';
 import '../../widgets/buttons.dart';
+import '../../widgets/product_card.dart';
 import '../../widgets/rating_stars.dart';
 import '../../widgets/states.dart';
 
@@ -30,6 +31,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
 
   Product? _product;
   List<Review> _reviews = [];
+  List<Product> _related = [];
   bool _loading = true;
   bool _adding = false;
   bool _wishlisted = false;
@@ -59,6 +61,16 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
             .toList();
       } catch (_) {
         _reviews = [];
+      }
+      // related products (non-fatal)
+      try {
+        final relRes = await _api.getRelatedProducts(widget.slug);
+        final rList = relRes['data'] as List? ?? [];
+        _related = rList
+            .map((e) => Product.fromJson(e as Map<String, dynamic>))
+            .toList();
+      } catch (_) {
+        _related = [];
       }
     } catch (e) {
       _error = e.toString();
@@ -130,6 +142,10 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
 
   Widget _content(BuildContext context) {
     final p = _product!;
+    // Tablet/desktop: two-pane — carousel left, details right.
+    if (MediaQuery.of(context).size.width >= 600) {
+      return _twoPaneContent(context, p);
+    }
     final images = p.images.isEmpty
         ? [const ProductImage(id: 0, imagePath: '', isPrimary: true)]
         : p.images;
@@ -214,11 +230,93 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
               if (p.specifications.isNotEmpty) _specs(p),
               _description(p),
               _reviewsSection(p),
+              if (_related.isNotEmpty) _relatedSection(_related),
               const SizedBox(height: 24),
             ],
           ),
         ),
       ],
+    );
+  }
+
+  /// Tablet/desktop two-pane: image gallery on the left, info on the right.
+  Widget _twoPaneContent(BuildContext context, Product p) {
+    final images = p.images.isEmpty
+        ? [const ProductImage(id: 0, imagePath: '', isPrimary: true)]
+        : p.images;
+    return SingleChildScrollView(
+      child: Column(
+        children: [
+          SizedBox(
+            width: double.infinity,
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 1200),
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(24, 16, 24, 0),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Left: image gallery
+                      Expanded(
+                        flex: 5,
+                        child: ConstrainedBox(
+                          constraints: const BoxConstraints(maxHeight: 480),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(20),
+                            child: images.first.imagePath.isNotEmpty
+                                ? Image.network(
+                                    images.first.imagePath,
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (_, __, ___) => Container(
+                                      color: AppTheme.surface,
+                                      child: const Icon(Icons.image_outlined,
+                                          size: 64, color: AppTheme.textFaint),
+                                    ),
+                                  )
+                                : Container(
+                                    color: AppTheme.surface,
+                                    child: const Icon(Icons.image_outlined,
+                                        size: 64, color: AppTheme.textFaint),
+                                  ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 32),
+                      // Right: info + actions
+                      Expanded(
+                        flex: 6,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            _header(p),
+                            if (p.specifications.isNotEmpty) _specs(p),
+                            _description(p),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+          // Full-width below: reviews + related
+          Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 1200),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _reviewsSection(p),
+                  if (_related.isNotEmpty) _relatedSection(_related),
+                  const SizedBox(height: 24),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -350,8 +448,40 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     );
   }
 
-  Widget _specs(Product p) {
-    return Padding(
+  Widget _relatedSection(List<Product> related) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const SectionHeader(title: 'Similar Products', padding: EdgeInsets.fromLTRB(20, 8, 20, 12)),
+        SizedBox(
+          height: 300,
+          child: ListView.separated(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            scrollDirection: Axis.horizontal,
+            itemCount: related.length,
+            separatorBuilder: (_, __) => const SizedBox(width: 12),
+            itemBuilder: (context, i) {
+              final rp = related[i];
+              return SizedBox(
+                width: 160,
+                child: ProductCard(
+                  product: rp,
+                  onTap: () => Navigator.pushReplacementNamed(
+                    context,
+                    '/product',
+                    arguments: rp.slug,
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+        const Divider(height: 32),
+      ],
+    );
+  }
+
+  Widget _specs(Product p) {    return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

@@ -26,6 +26,42 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   final _couponCtrl = TextEditingController();
   bool _loading = true;
   bool _placing = false;
+  bool _applyingCoupon = false;
+  bool _couponValid = false;
+  String? _couponMessage;
+
+  Future<void> _applyCoupon() async {
+    final code = _couponCtrl.text.trim();
+    if (code.isEmpty) {
+      setState(() {
+        _couponValid = false;
+        _couponMessage = 'Enter a coupon code first';
+      });
+      return;
+    }
+    setState(() => _applyingCoupon = true);
+    try {
+      final res = await _api.validateCoupon(
+        code,
+        subtotal: _cart?.summary.subtotal,
+      );
+      final data = res['data'] as Map<String, dynamic>? ?? res;
+      final discount = (data['discount'] ?? data['amount'] ?? 0).toString();
+      setState(() {
+        _couponValid = true;
+        _couponMessage = 'Coupon applied! You saved ₹$discount';
+      });
+      _toast('Coupon applied 🎉', success: true);
+    } catch (e) {
+      setState(() {
+        _couponValid = false;
+        _couponMessage = e.toString();
+      });
+    } finally {
+      if (mounted) setState(() => _applyingCoupon = false);
+    }
+  }
+
   String? _error;
 
   // Inline new-address form
@@ -164,7 +200,12 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       appBar: AppBar(title: const Text('Checkout')),
       body: LoadingOverlay(
         isLoading: _placing,
-        child: _body(),
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 800),
+            child: _body(),
+          ),
+        ),
       ),
       bottomNavigationBar: _cart != null && _cart!.items.isNotEmpty
           ? _placeOrderBar()
@@ -235,8 +276,35 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                 ),
               ),
             ),
+            const SizedBox(width: 8),
+            _applyingCoupon
+                ? const SizedBox(
+                    width: 24,
+                    height: 24,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : ElevatedButton(
+                    onPressed: _applyCoupon,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppTheme.primary,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 14),
+                    ),
+                    child: const Text('Apply'),
+                  ),
           ],
         ),
+        if (_couponMessage != null) ...[
+          const SizedBox(height: 8),
+          Text(
+            _couponMessage!,
+            style: TextStyle(
+              fontSize: 12,
+              color: _couponValid ? AppTheme.success : AppTheme.danger,
+            ),
+          ),
+        ],
         const SizedBox(height: 16),
         _sectionTitle('Payment Method'),
         ..._payments.map((p) => RadioListTile<String>(
