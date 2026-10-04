@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Vendor;
+use App\Models\VendorWithdrawal;
+use App\Services\VendorEarningsService;
 use Illuminate\Http\Request;
 
 class VendorController extends Controller
@@ -52,5 +54,37 @@ class VendorController extends Controller
         $vendor->update($data);
 
         return back()->with('success', "Commission for \"{$vendor->shop_name}\" set to {$vendor->commission_pct}%.");
+    }
+
+    public function payouts(Request $request)
+    {
+        $status = $request->query('status', 'all');
+
+        $withdrawals = VendorWithdrawal::with('vendor.user:id,name,email')
+            ->when(in_array($status, ['pending', 'approved', 'paid', 'rejected']), fn ($q) => $q->where('status', $status))
+            ->latest()
+            ->paginate(15)
+            ->withQueryString();
+
+        return view('admin.vendors.payouts', compact('withdrawals', 'status'));
+    }
+
+    public function approveWithdrawal(Request $request, VendorWithdrawal $withdrawal, VendorEarningsService $service)
+    {
+        $note = $request->validate(['note' => ['nullable', 'string', 'max:500']])['note'] ?? null;
+
+        $service->approveWithdrawal($withdrawal, $note);
+
+        return back()->with('success', 'Withdrawal of ₹' . number_format((float) $withdrawal->amount, 2)
+            . ' marked as paid for "' . $withdrawal->vendor->shop_name . '".');
+    }
+
+    public function rejectWithdrawal(Request $request, VendorWithdrawal $withdrawal, VendorEarningsService $service)
+    {
+        $note = $request->validate(['note' => ['nullable', 'string', 'max:500']])['note'] ?? null;
+
+        $service->rejectWithdrawal($withdrawal, $note);
+
+        return back()->with('success', 'Withdrawal rejected — amount returned to the vendor\'s available balance.');
     }
 }

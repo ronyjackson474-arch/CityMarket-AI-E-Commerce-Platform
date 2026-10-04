@@ -90,6 +90,7 @@ class OrderApiTest extends TestCase
             'type' => 'percentage',
             'value' => 20,
             'min_order_amount' => 0,
+            'max_discount' => 500,
         ]);
 
         $response = $this->actingAs($user, 'sanctum')

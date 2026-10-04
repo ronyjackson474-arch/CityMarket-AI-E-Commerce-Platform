@@ -27,14 +27,34 @@ class DashboardController extends Controller
         $recentOrders = Order::with('user:id,name', 'items')->latest()->limit(8)->get();
         $lowStockProducts = Product::where('stock', '<', 10)->with('category:id,name')->limit(5)->get();
 
-        // Simple sales chart: last 7 days
+        // Sales trend: last 30 days (Chart.js line chart)
         $salesData = Order::selectRaw('DATE(created_at) as date, SUM(total) as total, COUNT(*) as count')
-            ->where('created_at', '>=', now()->subDays(7))
+            ->where('created_at', '>=', now()->subDays(30))
             ->where('status', '!=', 'cancelled')
             ->groupByRaw('DATE(created_at)')
             ->orderBy('date')
             ->get();
 
-        return view('admin.dashboard', compact('stats', 'recentOrders', 'lowStockProducts', 'salesData'));
+        // Fill missing days with zeros so the line is continuous
+        $salesByDate = $salesData->keyBy(fn ($d) => $d->date);
+        $salesSeries = collect(range(29, 0))->map(function ($i) use ($salesByDate) {
+            $date = now()->subDays($i)->toDateString();
+            $day = $salesByDate->get($date);
+
+            return [
+                'date' => $date,
+                'total' => (float) ($day->total ?? 0),
+                'count' => (int) ($day->count ?? 0),
+            ];
+        });
+
+        // Orders by status (doughnut)
+        $ordersByStatus = Order::selectRaw('status, COUNT(*) as count')
+            ->groupBy('status')
+            ->pluck('count', 'status');
+
+        return view('admin.dashboard', compact(
+            'stats', 'recentOrders', 'lowStockProducts', 'salesSeries', 'ordersByStatus'
+        ));
     }
 }

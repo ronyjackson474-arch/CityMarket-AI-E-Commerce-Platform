@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Address;
 use App\Models\Order;
 use App\Models\ReturnRequest;
+use App\Models\SiteNotification;
 use App\Services\WalletService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -20,6 +21,28 @@ class AccountController extends Controller
         $wishlistCount = $user->wishlist()->count();
 
         return view('storefront.account.index', compact('user', 'orders', 'wallet', 'wishlistCount'));
+    }
+
+    public function notifications()
+    {
+        $user = Auth::user();
+        $notifications = SiteNotification::forUser($user->id)->latest('created_at')->paginate(15);
+
+        return view('storefront.account.notifications', compact('notifications'));
+    }
+
+    public function readNotification(string $id)
+    {
+        SiteNotification::forUser(Auth::id())->where('id', $id)->first()?->markRead();
+
+        return back();
+    }
+
+    public function readAllNotifications()
+    {
+        SiteNotification::forUser(Auth::id())->whereNull('read_at')->update(['read_at' => now()]);
+
+        return back()->with('success', 'All notifications marked as read.');
     }
 
     public function orders()

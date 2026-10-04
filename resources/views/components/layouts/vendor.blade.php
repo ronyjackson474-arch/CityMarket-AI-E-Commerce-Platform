@@ -37,6 +37,7 @@
                     ['route' => 'vendor.products.index', 'label' => 'My Products', 'icon' => '📦'],
                     ['route' => 'vendor.products.create', 'label' => 'Add Product', 'icon' => '➕'],
                     ['route' => 'vendor.orders', 'label' => 'Orders', 'icon' => '🧾'],
+                    ['route' => 'vendor.earnings', 'label' => 'Earnings & Payouts', 'icon' => '💰'],
                     ['route' => 'vendor.profile', 'label' => 'Shop Profile', 'icon' => '⚙️'],
                 ] as $item)
                     <a href="{{ route($item['route']) }}"
@@ -83,6 +84,7 @@
                     ['route' => 'vendor.dashboard', 'label' => 'Dashboard'],
                     ['route' => 'vendor.products.index', 'label' => 'Products'],
                     ['route' => 'vendor.orders', 'label' => 'Orders'],
+                    ['route' => 'vendor.earnings', 'label' => 'Earnings'],
                     ['route' => 'vendor.profile', 'label' => 'Profile'],
                 ] as $item)
                     <a href="{{ route($item['route']) }}"

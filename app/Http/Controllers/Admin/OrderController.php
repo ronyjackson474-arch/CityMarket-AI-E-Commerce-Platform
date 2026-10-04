@@ -41,7 +41,24 @@ class OrderController extends Controller
             'status' => ['required', 'in:' . implode(',', Order::STATUSES)],
         ]);
 
+        $previous = $order->status;
         $order->update(['status' => $data['status']]);
+
+        // Record vendor earnings the moment an order is delivered.
+        if ($data['status'] === Order::STATUS_DELIVERED && $previous !== Order::STATUS_DELIVERED) {
+            app(\App\Services\VendorEarningsService::class)->recordForOrder($order->refresh());
+        }
+
+        // Notify the customer about the status change.
+        if ($order->user_id && $previous !== $data['status']) {
+            \App\Models\SiteNotification::notify(
+                $order->user_id,
+                'order_status',
+                "Order {$order->order_number} is now {$data['status']}",
+                "Your order {$order->order_number} status changed to {$data['status']}.",
+                "/account/orders/{$order->order_number}"
+            );
+        }
 
         return back()->with('success', "Order status updated to {$data['status']}.");
     }

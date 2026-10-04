@@ -27,7 +27,7 @@ return [
 
     // AI / LLM gateway (OpenAI-compatible)
     'openai' => [
-        'key' => env('OPENAI_API_KEY'),
+        'key' => env('OPENAI_API_KEY') ?: env('OPENAI_KEY'),
         'base_url' => env('OPENAI_BASE_URL', 'https://api.openai.com/v1'),
         'model' => env('AI_MODEL', 'gpt-4o-mini'),
     ],

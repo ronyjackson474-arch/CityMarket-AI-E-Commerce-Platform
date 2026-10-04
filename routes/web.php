@@ -70,6 +70,9 @@ Route::post('/support/send', [AiAssistantController::class, 'supportSend'])->nam
 Route::middleware(['auth'])->group(function () {
     // Account / Orders
     Route::get('/account', [AccountController::class, 'index'])->name('account');
+    Route::get('/account/notifications', [AccountController::class, 'notifications'])->name('account.notifications');
+    Route::post('/account/notifications/read-all', [AccountController::class, 'readAllNotifications'])->name('account.notifications.read-all');
+    Route::post('/account/notifications/{id}/read', [AccountController::class, 'readNotification'])->name('account.notifications.read');
     Route::get('/account/orders', [AccountController::class, 'orders'])->name('account.orders');
     Route::get('/account/orders/{orderNumber}', [AccountController::class, 'orderDetail'])->name('account.order-detail');
     Route::post('/account/orders/{orderNumber}/cancel', [AccountController::class, 'cancelOrder'])->name('account.cancel-order');
@@ -108,6 +111,9 @@ Route::prefix('vendor')->name('vendor.')->middleware(['auth', 'vendor'])->group(
     Route::put('/products/{product}', [VendorDashboardController::class, 'updateProduct'])->name('products.update');
     Route::delete('/products/{product}', [VendorDashboardController::class, 'destroyProduct'])->name('products.destroy');
     Route::get('/orders', [VendorDashboardController::class, 'orders'])->name('orders');
+    Route::post('/orders/{orderNumber}/status', [VendorDashboardController::class, 'updateOrderStatus'])->name('orders.status');
+    Route::get('/earnings', [VendorDashboardController::class, 'earnings'])->name('earnings');
+    Route::post('/withdrawals', [VendorDashboardController::class, 'requestWithdrawal'])->name('withdrawals.store');
     Route::get('/profile', [VendorDashboardController::class, 'profile'])->name('profile');
     Route::put('/profile', [VendorDashboardController::class, 'updateProfile'])->name('profile.update');
 });
@@ -152,6 +158,11 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::post('/vendors/{vendor}/approve', [AdminVendorController::class, 'approve'])->name('vendors.approve');
         Route::post('/vendors/{vendor}/suspend', [AdminVendorController::class, 'suspend'])->name('vendors.suspend');
         Route::post('/vendors/{vendor}/commission', [AdminVendorController::class, 'updateCommission'])->name('vendors.commission');
+
+        // Vendor payouts
+        Route::get('/payouts', [AdminVendorController::class, 'payouts'])->name('vendors.payouts');
+        Route::post('/withdrawals/{withdrawal}/approve', [AdminVendorController::class, 'approveWithdrawal'])->name('withdrawals.approve');
+        Route::post('/withdrawals/{withdrawal}/reject', [AdminVendorController::class, 'rejectWithdrawal'])->name('withdrawals.reject');
 
         // AI Admin Assistant
         Route::get('/ai-assistant', [AdminAiController::class, 'index'])->name('ai-assistant.index');

@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Category;
 use App\Models\Brand;
 use App\Models\OrderItem;
+use App\Models\Order;
 use App\Models\Product;
 use App\Models\Vendor;
 use Illuminate\Http\Request;
@@ -40,7 +41,34 @@ class DashboardController extends Controller
         $recentProducts = $vendor->products()->with('images')->latest()->limit(5)->get();
         $lowStock = $vendor->products()->where('stock', '<=', 5)->where('is_active', true)->orderBy('stock')->limit(5)->get();
 
-        return view('vendor.dashboard', compact('vendor', 'stats', 'recentProducts', 'lowStock'));
+        // Earnings + pending payout summary
+        $earnings = app(\App\Services\VendorEarningsService::class)->summary($vendor);
+
+        // Recent orders containing this vendor's products
+        $recentOrders = OrderItem::whereHas('product', fn ($q) => $q->where('vendor_id', $vendor->id))
+            ->with('order:id,order_number,status,customer_name,created_at')
+            ->latest('id')->limit(6)->get()
+            ->unique('order_id')->values();
+
+        // Sales trend: units sold per day, last 14 days
+        $salesByDate = OrderItem::query()
+            ->join('products', 'products.id', '=', 'order_items.product_id')
+            ->join('orders', 'orders.id', '=', 'order_items.order_id')
+            ->where('products.vendor_id', $vendor->id)
+            ->where('orders.status', '!=', 'cancelled')
+            ->where('orders.created_at', '>=', now()->subDays(14))
+            ->selectRaw('DATE(orders.created_at) as date, SUM(order_items.price * order_items.quantity) as total')
+            ->groupByRaw('DATE(orders.created_at)')
+            ->pluck('total', 'date');
+
+        $salesSeries = collect(range(13, 0))->map(fn ($i) => [
+            'date' => now()->subDays($i)->toDateString(),
+            'total' => (float) ($salesByDate[now()->subDays($i)->toDateString()] ?? 0),
+        ]);
+
+        return view('vendor.dashboard', compact(
+            'vendor', 'stats', 'recentProducts', 'lowStock', 'earnings', 'recentOrders', 'salesSeries'
+        ));
     }
 
     public function products()
@@ -116,9 +144,78 @@ class DashboardController extends Controller
         return view('vendor.orders', compact('items'));
     }
 
+    /**
+     * Vendor fulfilment: advance an order containing their products to
+     * packed or shipped. Delivered/cancelled/returned stay admin-only.
+     */
+    public function updateOrderStatus(Request $request, string $orderNumber)
+    {
+        $data = $request->validate([
+            'status' => ['required', 'in:packed,shipped'],
+        ]);
+
+        $vendor = $this->vendor();
+
+        $order = Order::where('order_number', $orderNumber)
+            ->whereHas('items.product', fn ($q) => $q->where('vendor_id', $vendor->id))
+            ->first();
+
+        if (! $order) {
+            abort(404);
+        }
+
+        $allowed = [
+            Order::STATUS_PENDING => [Order::STATUS_CONFIRMED],
+            Order::STATUS_CONFIRMED => [Order::STATUS_PACKED],
+            Order::STATUS_PACKED => [Order::STATUS_SHIPPED],
+        ];
+
+        if (! in_array($data['status'], $allowed[$order->status] ?? [], true)) {
+            return back()->withErrors([
+                'status' => "Cannot move order from \"{$order->status}\" to \"{$data['status']}\". Allowed next step: "
+                    . ($allowed[$order->status][0] ?? 'none (admin handles this stage).'),
+            ]);
+        }
+
+        $order->update(['status' => $data['status']]);
+
+        return back()->with('success', "Order {$orderNumber} → {$data['status']}.");
+    }
+
     public function profile()
     {
         return view('vendor.profile', ['vendor' => $this->vendor()]);
+    }
+
+    public function earnings()
+    {
+        $vendor = $this->vendor();
+        $service = app(\App\Services\VendorEarningsService::class);
+
+        $summary = $service->summary($vendor);
+        $ledger = $service->ledger($vendor);
+        $withdrawals = $service->withdrawals($vendor);
+
+        return view('vendor.earnings', compact('vendor', 'summary', 'ledger', 'withdrawals'));
+    }
+
+    public function requestWithdrawal(Request $request)
+    {
+        $data = $request->validate([
+            'amount'        => ['required', 'numeric', 'min:1'],
+            'method'        => ['required', 'in:bank_transfer,upi'],
+            'payout_detail' => ['required', 'string', 'max:200'],
+        ]);
+
+        try {
+            app(\App\Services\VendorEarningsService::class)
+                ->requestWithdrawal($this->vendor(), (float) $data['amount'], $data['method'], $data['payout_detail']);
+        } catch (\InvalidArgumentException $e) {
+            return back()->withErrors(['amount' => $e->getMessage()]);
+        }
+
+        return redirect()->route('vendor.earnings')
+            ->with('success', 'Withdrawal request submitted. The admin will process it shortly.');
     }
 
     public function updateProfile(Request $request)

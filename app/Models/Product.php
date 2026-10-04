@@ -143,7 +143,12 @@ class Product extends Model
             })
             ->when(data_get($filters, 'brand'), fn ($q, $v) => $q->where('brand_id', $v))
             ->when(data_get($filters, 'price_min'), fn ($q, $v) => $q->where('price', '>=', $v))
-            ->when(data_get($filters, 'price_max'), fn ($q, $v) => $q->where('price', '<=', $v))
+            ->when(data_get($filters, 'price_max'), function ($q, $v) {
+                // "under X" applies to the effective (sale) price a customer pays
+                $q->where(function ($qq) use ($v) {
+                    $qq->whereRaw('COALESCE(NULLIF(sale_price, 0), price) <= ?', [$v]);
+                });
+            })
             ->when(data_get($filters, 'min_rating'), fn ($q, $v) => $q->where('rating', '>=', $v))
             ->when(data_get($filters, 'search'), function ($q, $term) {
                 $terms = array_filter(preg_split('/\s+/', trim($term)));

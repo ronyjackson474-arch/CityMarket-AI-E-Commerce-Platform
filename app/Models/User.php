@@ -83,6 +83,11 @@ class User extends Authenticatable
         return $this->hasOne(Vendor::class);
     }
 
+    public function siteNotifications(): HasMany
+    {
+        return $this->hasMany(SiteNotification::class);
+    }
+
     public function isAdmin(): bool
     {
         return $this->role === 'admin';

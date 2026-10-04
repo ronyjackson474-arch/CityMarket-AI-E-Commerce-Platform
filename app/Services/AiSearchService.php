@@ -153,6 +153,32 @@ PROMPT;
             $filters['min_rating'] = (float) $interpretation['min_rating'];
         }
 
+        // Try the full interpretation first; if the LLM-inferred category or
+        // rating filter yields nothing, relax those filters step by step so the
+        // user still gets results (a 0-result AI search feels broken).
+        $attempts = [ $filters ];
+        if (! empty($filters['category'])) {
+            $withoutCat = $filters; unset($withoutCat['category']); $attempts[] = $withoutCat;
+        }
+        if (! empty($filters['min_rating'])) {
+            foreach ($attempts as $a) {
+                $relaxed = $a; unset($relaxed['min_rating']);
+                if ($relaxed !== $a) { $attempts[] = $relaxed; }
+            }
+        }
+
+        foreach ($attempts as $attempt) {
+            $results = $this->runFilteredQuery($attempt);
+            if (! empty($results)) {
+                return $results;
+            }
+        }
+
+        return [];
+    }
+
+    protected function runFilteredQuery(array $filters): array
+    {
         return Product::query()
             ->where('is_active', true)
             ->applyFilters($filters)

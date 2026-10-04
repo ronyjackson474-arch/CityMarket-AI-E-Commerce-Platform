@@ -105,6 +105,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('vendor/products/{productId}', [\App\Http\Controllers\Api\VendorApiController::class, 'updateProduct']);
     Route::delete('vendor/products/{productId}', [\App\Http\Controllers\Api\VendorApiController::class, 'destroyProduct']);
     Route::get('vendor/orders', [\App\Http\Controllers\Api\VendorApiController::class, 'orders']);
+    Route::post('vendor/orders/{orderNumber}/status', [\App\Http\Controllers\Api\VendorApiController::class, 'updateOrderStatus']);
+    Route::get('vendor/earnings', [\App\Http\Controllers\Api\VendorApiController::class, 'earnings']);
+    Route::get('vendor/withdrawals', [\App\Http\Controllers\Api\VendorApiController::class, 'withdrawals']);
+    Route::post('vendor/withdrawals', [\App\Http\Controllers\Api\VendorApiController::class, 'requestWithdrawal']);
     Route::get('vendor/profile', [\App\Http\Controllers\Api\VendorApiController::class, 'profile']);
     Route::put('vendor/profile', [\App\Http\Controllers\Api\VendorApiController::class, 'updateProfile']);
 });
@@ -137,6 +141,40 @@ Route::middleware('auth:sanctum')->prefix('admin')->group(function () {
     Route::get('returns', [\App\Http\Controllers\Api\AdminApiController::class, 'returns']);
     Route::post('returns/{returnRequest}/action', [\App\Http\Controllers\Api\AdminApiController::class, 'returnAction']);
 
+    Route::get('payouts', [\App\Http\Controllers\Api\AdminApiController::class, 'payouts']);
+    Route::post('payouts/{withdrawal}/approve', [\App\Http\Controllers\Api\AdminApiController::class, 'approvePayout']);
+    Route::post('payouts/{withdrawal}/reject', [\App\Http\Controllers\Api\AdminApiController::class, 'rejectPayout']);
+
     Route::get('users', [\App\Http\Controllers\Api\AdminApiController::class, 'users']);
     Route::post('users/{user}/toggle-status', [\App\Http\Controllers\Api\AdminApiController::class, 'toggleUser']);
+
+    // Admin CRUD parity (coupons / categories / banners) + notification broadcast
+    Route::get('coupons', [\App\Http\Controllers\Api\AdminCrudController::class, 'coupons']);
+    Route::post('coupons', [\App\Http\Controllers\Api\AdminCrudController::class, 'storeCoupon']);
+    Route::put('coupons/{coupon}', [\App\Http\Controllers\Api\AdminCrudController::class, 'updateCoupon']);
+    Route::delete('coupons/{coupon}', [\App\Http\Controllers\Api\AdminCrudController::class, 'destroyCoupon']);
+
+    Route::get('categories', [\App\Http\Controllers\Api\AdminCrudController::class, 'categories']);
+    Route::post('categories', [\App\Http\Controllers\Api\AdminCrudController::class, 'storeCategory']);
+    Route::put('categories/{category}', [\App\Http\Controllers\Api\AdminCrudController::class, 'updateCategory']);
+    Route::delete('categories/{category}', [\App\Http\Controllers\Api\AdminCrudController::class, 'destroyCategory']);
+
+    Route::get('banners', [\App\Http\Controllers\Api\AdminCrudController::class, 'banners']);
+    Route::post('banners', [\App\Http\Controllers\Api\AdminCrudController::class, 'storeBanner']);
+    Route::put('banners/{banner}', [\App\Http\Controllers\Api\AdminCrudController::class, 'updateBanner']);
+    Route::delete('banners/{banner}', [\App\Http\Controllers\Api\AdminCrudController::class, 'destroyBanner']);
+
+    Route::post('notifications/broadcast', [\App\Http\Controllers\Api\AdminCrudController::class, 'broadcastNotification']);
 });
+
+// Customer notifications (sanctum)
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('notifications', [\App\Http\Controllers\Api\AdminCrudController::class, 'myNotifications']);
+    Route::post('notifications/read-all', [\App\Http\Controllers\Api\AdminCrudController::class, 'markAllRead']);
+    Route::post('notifications/{notification}/read', [\App\Http\Controllers\Api\AdminCrudController::class, 'markRead']);
+});
+
+// Public: active banners for the storefront/mobile app
+Route::get('banners', fn () => response()->json([
+    'data' => \App\Models\Banner::active()->orderBy('placement')->orderBy('position')->get(),
+]));

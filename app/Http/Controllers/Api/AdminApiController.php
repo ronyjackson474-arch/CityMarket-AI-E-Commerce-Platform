@@ -159,7 +159,24 @@ class AdminApiController extends Controller
             'status' => ['required', Rule::in(['pending', 'confirmed', 'packed', 'shipped', 'delivered', 'cancelled'])],
         ]);
 
+        $previous = $order->status;
         $order->update($data);
+
+        // Record vendor earnings the moment an order is delivered.
+        if ($data['status'] === 'delivered' && $previous !== 'delivered') {
+            app(\App\Services\VendorEarningsService::class)->recordForOrder($order->refresh());
+        }
+
+        // Notify the customer about the status change.
+        if ($order->user_id && $previous !== $order->status) {
+            \App\Models\SiteNotification::notify(
+                $order->user_id,
+                'order_status',
+                "Order {$order->order_number} is now {$order->status}",
+                "Your order {$order->order_number} status changed to {$order->status}.",
+                "/account/orders/{$order->order_number}"
+            );
+        }
 
         return response()->json(['message' => "Order {$order->order_number} → {$order->status}.", 'data' => $order]);
     }
@@ -189,12 +206,73 @@ class AdminApiController extends Controller
             'action' => ['required', Rule::in(['approve', 'reject'])],
         ]);
 
+        if ($data['action'] === 'approve') {
+            $returnRequest->update([
+                'status' => 'approved',
+                'processed_at' => now(),
+            ]);
+
+            // Refund to the customer's wallet and mark the order returned
+            // (parity with the web admin panel flow).
+            $wallet = app(\App\Services\WalletService::class);
+            $wallet->refundOrder($returnRequest->order, (float) $returnRequest->refund_amount, 'return_refund');
+            $returnRequest->order->update(['status' => \App\Models\Order::STATUS_RETURNED]);
+            $returnRequest->update(['status' => 'completed']);
+
+            return response()->json([
+                'message' => 'Return approved. Refund credited to wallet.',
+                'data' => $returnRequest->fresh(),
+            ]);
+        }
+
         $returnRequest->update([
-            'status' => $data['action'] === 'approve' ? 'approved' : 'rejected',
+            'status' => 'rejected',
             'processed_at' => now(),
         ]);
 
-        return response()->json(['message' => "Return {$data['action']}d.", 'data' => $returnRequest]);
+        return response()->json(['message' => 'Return rejected.', 'data' => $returnRequest]);
+    }
+
+    // ----- Vendor payouts -----
+
+    /** GET /api/admin/payouts */
+    public function payouts(Request $request)
+    {
+        $this->guard($request);
+
+        $list = \App\Models\VendorWithdrawal::with('vendor:id,shop_name,user_id')
+            ->when(in_array($request->query('status'), ['pending', 'approved', 'paid', 'rejected']),
+                fn ($q) => $q->where('status', $request->query('status')))
+            ->latest('id')
+            ->paginate((int) $request->query('per_page', 15));
+
+        return response()->json(['data' => $list->items(), 'meta' => [
+            'current_page' => $list->currentPage(),
+            'last_page' => $list->lastPage(),
+            'total' => $list->total(),
+        ]]);
+    }
+
+    /** POST /api/admin/payouts/{withdrawal}/approve — mark as paid. */
+    public function approvePayout(Request $request, \App\Models\VendorWithdrawal $withdrawal)
+    {
+        $this->guard($request);
+
+        $withdrawal = app(\App\Services\VendorEarningsService::class)
+            ->approveWithdrawal($withdrawal, $request->input('note'));
+
+        return response()->json(['message' => 'Payout marked as paid.', 'data' => $withdrawal]);
+    }
+
+    /** POST /api/admin/payouts/{withdrawal}/reject — return funds to vendor balance. */
+    public function rejectPayout(Request $request, \App\Models\VendorWithdrawal $withdrawal)
+    {
+        $this->guard($request);
+
+        $withdrawal = app(\App\Services\VendorEarningsService::class)
+            ->rejectWithdrawal($withdrawal, $request->input('note'));
+
+        return response()->json(['message' => 'Payout rejected — funds returned to vendor balance.', 'data' => $withdrawal]);
     }
 
     // ----- Users -----

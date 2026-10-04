@@ -134,6 +134,10 @@
                                     <div class="text-xs text-ink-400 truncate">{{ auth()->user()->email }}</div>
                                 </div>
                                 <a href="{{ route('account') }}" class="flex items-center gap-2 px-4 py-2 text-sm text-ink-700 hover:bg-brand-50 hover:text-brand-700 transition-colors">👤 My Account</a>
+                                <a href="{{ route('account.notifications') }}" class="flex items-center gap-2 px-4 py-2 text-sm text-ink-700 hover:bg-brand-50 hover:text-brand-700 transition-colors">🔔 Notifications
+                                    @php $unreadCount = auth()->user()->siteNotifications()->whereNull('read_at')->count(); @endphp
+                                    @if($unreadCount > 0)<span class="ml-auto bg-brand-600 text-white text-[10px] font-bold rounded-full px-1.5 py-0.5">{{ $unreadCount }}</span>@endif
+                                </a>
                                 <a href="{{ route('account.orders') }}" class="flex items-center gap-2 px-4 py-2 text-sm text-ink-700 hover:bg-brand-50 hover:text-brand-700 transition-colors">📦 My Orders</a>
                                 <a href="{{ route('wishlist') }}" class="flex items-center gap-2 px-4 py-2 text-sm text-ink-700 hover:bg-brand-50 hover:text-brand-700 transition-colors">❤️ Wishlist</a>
                                 <a href="{{ route('account.wallet') }}" class="flex items-center gap-2 px-4 py-2 text-sm text-ink-700 hover:bg-brand-50 hover:text-brand-700 transition-colors">💰 Wallet</a>

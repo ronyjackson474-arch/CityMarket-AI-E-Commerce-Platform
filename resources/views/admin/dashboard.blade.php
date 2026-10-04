@@ -83,21 +83,53 @@
         </div>
     </div>
 
-    <!-- Sales chart -->
-    @if($salesData->isNotEmpty())
-    <div class="bg-white rounded-xl border border-ink-100 mt-6 p-5">
-        <h3 class="font-bold text-ink-900 mb-4">Sales (Last 7 Days)</h3>
-        <div class="flex items-end gap-2 h-40">
-            @php
-                $maxSale = $salesData->max('total') ?: 1;
-            @endphp
-            @foreach($salesData as $day)
-                <div class="flex-1 flex flex-col items-center gap-1">
-                    <div class="w-full bg-gradient-to-t from-brand-600 to-brand-400 rounded-t-md transition-all hover:opacity-80" style="height: {{ ($day->total / $maxSale) * 100 }}%" title="₹{{ number_format($day->total) }} — {{ $day->count }} orders"></div>
-                    <div class="text-xs text-ink-500">{{ \Carbon\Carbon::parse($day->date)->format('D') }}</div>
-                </div>
-            @endforeach
+    <!-- Charts -->
+    <div class="grid lg:grid-cols-3 gap-6 mt-6">
+        <div class="lg:col-span-2 bg-white rounded-xl border border-ink-100 p-5">
+            <h3 class="font-bold text-ink-900 mb-4">Sales — Last 30 Days</h3>
+            <div class="h-64">
+                <canvas id="salesChart" data-chart="line"></canvas>
+                <script id="salesChart-data" type="application/json">
+                    {
+                        "type": "line",
+                        "legend": false,
+                        "data": {
+                            "labels": {!! json_encode($salesSeries->map(fn ($d) => \Carbon\Carbon::parse($d['date'])->format('d M'))->values()) !!},
+                            "datasets": [{
+                                "label": "Revenue ₹",
+                                "data": {{ json_encode($salesSeries->pluck('total')->values()) }},
+                                "borderColor": "#4f46e5",
+                                "backgroundColor": "rgba(79,70,229,0.08)",
+                                "fill": true,
+                                "tension": 0.35,
+                                "pointRadius": 2,
+                                "borderWidth": 2
+                            }]
+                        }
+                    }
+                </script>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-xl border border-ink-100 p-5">
+            <h3 class="font-bold text-ink-900 mb-4">Orders by Status</h3>
+            <div class="h-64">
+                <canvas id="statusChart" data-chart="doughnut"></canvas>
+                <script id="statusChart-data" type="application/json">
+                    {
+                        "type": "doughnut",
+                        "cutout": "62%",
+                        "data": {
+                            "labels": {!! json_encode($ordersByStatus->keys()->map(fn ($s) => ucfirst($s))) !!},
+                            "datasets": [{
+                                "data": {{ json_encode($ordersByStatus->values()) }},
+                                "backgroundColor": ["#6366f1", "#22c55e", "#f59e0b", "#3b82f6", "#10b981", "#ef4444", "#a855f7"],
+                                "borderWidth": 0
+                            }]
+                        }
+                    }
+                </script>
+            </div>
         </div>
     </div>
-    @endif
 </x-layouts.admin>

@@ -187,10 +187,108 @@ class VendorApiController extends Controller
         ]]);
     }
 
+    /** POST /api/vendor/orders/{orderNumber}/status — vendor fulfilment. */
+    public function updateOrderStatus(Request $request, string $orderNumber)
+    {
+        $data = $request->validate([
+            'status' => ['required', 'in:packed,shipped'],
+        ]);
+
+        $vendor = $this->vendor($request);
+
+        $order = \App\Models\Order::where('order_number', $orderNumber)
+            ->whereHas('items.product', fn ($q) => $q->where('vendor_id', $vendor->id))
+            ->first();
+
+        if (! $order) {
+            return response()->json(['message' => 'Order not found among your products\' orders.'], 404);
+        }
+
+        $allowed = [
+            \App\Models\Order::STATUS_PENDING => [\App\Models\Order::STATUS_CONFIRMED],
+            \App\Models\Order::STATUS_CONFIRMED => [\App\Models\Order::STATUS_PACKED],
+            \App\Models\Order::STATUS_PACKED => [\App\Models\Order::STATUS_SHIPPED],
+        ];
+
+        if (! in_array($data['status'], $allowed[$order->status] ?? [], true)) {
+            return response()->json([
+                'message' => "Cannot move order from \"{$order->status}\" to \"{$data['status']}\".",
+            ], 422);
+        }
+
+        $order->update(['status' => $data['status']]);
+
+        return response()->json([
+            'message' => "Order {$orderNumber} → {$data['status']}.",
+            'data' => $order->fresh(),
+        ]);
+    }
+
     /** GET /api/vendor/profile */
     public function profile(Request $request)
     {
         return response()->json(['data' => $this->vendor($request)]);
+    }
+
+    /** GET /api/vendor/earnings — summary + paginated ledger. */
+    public function earnings(Request $request)
+    {
+        $vendor = $this->vendor($request);
+        $service = app(\App\Services\VendorEarningsService::class);
+
+        $ledger = $service->ledger($vendor, (int) $request->query('per_page', 15));
+
+        return response()->json([
+            'data' => [
+                'summary' => $service->summary($vendor),
+                'ledger' => $ledger->items(),
+            ],
+            'meta' => [
+                'current_page' => $ledger->currentPage(),
+                'last_page' => $ledger->lastPage(),
+                'total' => $ledger->total(),
+            ],
+        ]);
+    }
+
+    /** GET /api/vendor/withdrawals */
+    public function withdrawals(Request $request)
+    {
+        $vendor = $this->vendor($request);
+
+        $list = \App\Models\VendorWithdrawal::where('vendor_id', $vendor->id)
+            ->latest('id')
+            ->paginate((int) $request->query('per_page', 10));
+
+        return response()->json(['data' => $list->items(), 'meta' => [
+            'current_page' => $list->currentPage(),
+            'last_page' => $list->lastPage(),
+            'total' => $list->total(),
+        ]]);
+    }
+
+    /** POST /api/vendor/withdrawals — request a payout. */
+    public function requestWithdrawal(Request $request)
+    {
+        $vendor = $this->vendor($request);
+
+        $data = $request->validate([
+            'amount'        => ['required', 'numeric', 'min:1'],
+            'method'        => ['required', 'in:bank_transfer,upi'],
+            'payout_detail' => ['required', 'string', 'max:200'],
+        ]);
+
+        try {
+            $withdrawal = app(\App\Services\VendorEarningsService::class)
+                ->requestWithdrawal($vendor, (float) $data['amount'], $data['method'], $data['payout_detail']);
+        } catch (\InvalidArgumentException $e) {
+            return response()->json(['message' => $e->getMessage()], 422);
+        }
+
+        return response()->json([
+            'message' => 'Withdrawal request submitted. It will be paid after admin approval.',
+            'data' => $withdrawal,
+        ], 201);
     }
 
     /** PUT /api/vendor/profile */
