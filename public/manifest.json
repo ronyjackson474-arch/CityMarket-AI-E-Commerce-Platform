@@ -1,0 +1,47 @@
+{
+    "name": "CityMarket — Premium Shopping",
+    "short_name": "CityMarket",
+    "description": "Shop fashion, beauty, electronics & more with AI-powered recommendations at CityMarket.",
+    "id": "/",
+    "start_url": "/?utm_source=pwa",
+    "scope": "/",
+    "display": "standalone",
+    "orientation": "portrait",
+    "theme_color": "#0f172a",
+    "background_color": "#0f172a",
+    "lang": "en",
+    "dir": "ltr",
+    "categories": ["shopping", "lifestyle"],
+    "icons": [
+        { "src": "/icons/icon-72.png", "sizes": "72x72", "type": "image/png", "purpose": "any" },
+        { "src": "/icons/icon-96.png", "sizes": "96x96", "type": "image/png", "purpose": "any" },
+        { "src": "/icons/icon-128.png", "sizes": "128x128", "type": "image/png", "purpose": "any" },
+        { "src": "/icons/icon-144.png", "sizes": "144x144", "type": "image/png", "purpose": "any" },
+        { "src": "/icons/icon-152.png", "sizes": "152x152", "type": "image/png", "purpose": "any" },
+        { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+        { "src": "/icons/icon-384.png", "sizes": "384x384", "type": "image/png", "purpose": "any" },
+        { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+        { "src": "/icons/icon-512-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+    ],
+    "shortcuts": [
+        {
+            "name": "AI Search",
+            "short_name": "AI Search",
+            "description": "Search products with AI",
+            "url": "/ai/search?utm_source=pwa_shortcut",
+            "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
+        },
+        {
+            "name": "My Cart",
+            "short_name": "Cart",
+            "url": "/cart?utm_source=pwa_shortcut",
+            "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
+        },
+        {
+            "name": "My Orders",
+            "short_name": "Orders",
+            "url": "/account/orders?utm_source=pwa_shortcut",
+            "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
+        }
+    ]
+}

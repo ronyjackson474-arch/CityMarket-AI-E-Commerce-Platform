@@ -3,7 +3,11 @@
     <nav class="text-sm text-ink-500 mb-4 flex items-center gap-1.5">
         <a href="{{ route('home') }}" class="hover:text-brand-600">Home</a>
         <span class="text-ink-300">›</span>
-        <a href="{{ route('category', $product->category->slug) }}" class="hover:text-brand-600">{{ $product->category->name }}</a>
+        @if($product->category)
+            <a href="{{ route('category', $product->category->slug) }}" class="hover:text-brand-600">{{ $product->category->name }}</a>
+        @else
+            <a href="{{ route('shop') }}" class="hover:text-brand-600">Shop</a>
+        @endif
         <span class="text-ink-300">›</span>
         <span class="text-ink-700 font-medium truncate">{{ $product->name }}</span>
     </nav>
@@ -12,7 +16,8 @@
         <!-- Image Gallery + 3D/AR Viewer -->
         <div class="lg:col-span-5">
             <div class="lg:sticky lg:top-24" data-reveal="right">
-                <div class="bg-white rounded-2xl border border-ink-100 overflow-hidden aspect-square mb-3 relative group ar-stage">
+                <div class="bg-white rounded-2xl border border-ink-100 overflow-hidden aspect-square mb-3 relative group ar-stage gallery-main"
+                    onclick="openLightbox(window.__galleryIndex ?? 0)">
                     @if($product->images->isNotEmpty())
                         @if($product->discount_percent > 0)
                             <div class="absolute top-3 left-3 z-10 bg-rose-500 text-white text-xs font-bold px-2.5 py-1 rounded-lg shadow-lg animate-bounce-in">-{{ $product->discount_percent }}%</div>
@@ -20,11 +25,14 @@
                         @if($product->is_flash_deal)
                             <div class="absolute top-3 right-3 z-10 bg-gradient-to-r from-orange-500 to-rose-500 text-white text-xs font-bold px-2.5 py-1 rounded-lg shadow-lg flex items-center gap-1 animate-pulse">⚡ FLASH</div>
                         @endif
-                        <img id="main-product-image" src="{{ $product->images->first()->image_path }}" alt="{{ $product->name }}" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110">
-                        <!-- Shine effect overlay -->
-                        <div class="absolute inset-0 sweep-shine pointer-events-none"></div>
+                        <img id="main-product-image" src="{{ $product->images->first()->image_path }}" alt="{{ $product->name }}" width="1200" height="1200" decoding="async" fetchpriority="high" class="w-full h-full object-cover">
+                        <!-- Zoom hint -->
+                        <div class="absolute bottom-3 left-3 z-10 bg-white/85 backdrop-blur text-ink-700 text-[10px] font-bold px-2.5 py-1 rounded-full shadow flex items-center gap-1 pointer-events-none">
+                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v6m3-3H7"/></svg>
+                            Click to zoom
+                        </div>
                     @else
-                        <div class="w-full h-full flex items-center justify-center text-ink-300">
+                        <div class="w-full h-full pc-placeholder flex items-center justify-center text-ink-400">
                             <svg class="w-24 h-24" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
                         </div>
                     @endif
@@ -35,11 +43,12 @@
                     </button>
                 </div>
                 @if($product->images->count() > 1)
-                    <div class="grid grid-cols-5 gap-2">
+                    <div class="grid grid-cols-5 gap-2" id="gallery-thumbs">
                         @foreach($product->images as $img)
-                            <button onclick="document.getElementById('main-product-image').src = '{{ $img->image_path }}'; document.querySelectorAll('.thumb-btn').forEach(b => b.classList.remove('border-brand-500')); this.classList.add('border-brand-500')"
-                                class="thumb-btn aspect-square rounded-lg overflow-hidden border-2 border-transparent hover:border-brand-400 transition-all hover:scale-105 {{ $loop->first ? 'border-brand-500' : '' }}">
-                                <img src="{{ $img->image_path }}" alt="" class="w-full h-full object-cover">
+                            <button onclick="setGalleryImage({{ $loop->index }}, this); event.stopPropagation();"
+                                data-idx="{{ $loop->index }}"
+                                class="gallery-thumb aspect-square {{ $loop->first ? 'active' : '' }}">
+                                <img src="{{ $img->image_path }}" alt="{{ $product->name }} view {{ $loop->iteration }}" width="200" height="200" decoding="async" loading="lazy" class="product-img">
                             </button>
                         @endforeach
                     </div>
@@ -110,6 +119,12 @@
         <div class="lg:col-span-7" data-reveal="left">
             @if($product->brand)
                 <a href="{{ route('shop', ['brand' => $product->brand_id]) }}" class="inline-block text-sm text-brand-600 font-semibold hover:underline bg-brand-50 px-3 py-1 rounded-full mb-3 animate-bounce-in">{{ $product->brand->name }}</a>
+            @endif
+            @if($product->vendor && $product->vendor->status === 'approved')
+                <a href="{{ route('vendor.shop', $product->vendor->slug) }}" class="inline-flex items-center gap-1.5 text-xs font-bold text-purple-700 hover:text-purple-900 bg-purple-50 hover:bg-purple-100 px-3 py-1 rounded-full mb-3 ml-1 border border-purple-100 transition-colors">
+                    🏪 Sold by {{ $product->vendor->shop_name }}
+                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+                </a>
             @endif
             <h1 class="text-3xl font-bold text-ink-900 mb-3 shimmer-text">{{ $product->name }}</h1>
 
@@ -270,7 +285,11 @@
     <section class="mb-12" data-reveal="up">
         <div class="flex items-center justify-between mb-4">
             <h2 class="text-xl font-bold text-ink-900 shimmer-text">You May Also Like</h2>
-            <a href="{{ route('category', $product->category->slug) }}" class="text-sm text-brand-600 hover:underline font-medium anim-underline">View all →</a>
+            @if($product->category)
+                <a href="{{ route('category', $product->category->slug) }}" class="text-sm text-brand-600 hover:underline font-medium anim-underline">View all →</a>
+            @else
+                <a href="{{ route('shop') }}" class="text-sm text-brand-600 hover:underline font-medium anim-underline">View all →</a>
+            @endif
         </div>
         <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 perspective-1000">
             @foreach($related as $relProduct)
@@ -297,4 +316,72 @@
         </form>
     </div>
     @endif
+
+    <!-- Gallery state -->
+    <script>
+        window.__galleryImages = @js($product->images->pluck('image_path'));
+        window.__galleryIndex = 0;
+
+        function setGalleryImage(index, btn) {
+            window.__galleryIndex = index;
+            const main = document.getElementById('main-product-image');
+            if (main && window.__galleryImages[index]) {
+                main.style.opacity = '0';
+                setTimeout(() => {
+                    main.src = window.__galleryImages[index];
+                    main.style.transition = 'opacity 0.25s ease';
+                    main.style.opacity = '1';
+                }, 120);
+            }
+            document.querySelectorAll('#gallery-thumbs .gallery-thumb').forEach(b => b.classList.remove('active'));
+            if (btn) btn.classList.add('active');
+        }
+
+        function openLightbox(index) {
+            if (!window.__galleryImages || !window.__galleryImages.length) return;
+            window.__galleryIndex = index;
+            document.getElementById('lightbox-img').src = window.__galleryImages[index];
+            document.getElementById('product-lightbox').classList.add('open');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeLightbox() {
+            document.getElementById('product-lightbox').classList.remove('open');
+            document.body.style.overflow = '';
+            // sync main image back to the last viewed one
+            const main = document.getElementById('main-product-image');
+            if (main) main.src = window.__galleryImages[window.__galleryIndex];
+            document.querySelectorAll('#gallery-thumbs .gallery-thumb').forEach((b, i) => b.classList.toggle('active', i === window.__galleryIndex));
+        }
+
+        function lightboxNav(step) {
+            const n = window.__galleryImages.length;
+            window.__galleryIndex = (window.__galleryIndex + step + n) % n;
+            document.getElementById('lightbox-img').src = window.__galleryImages[window.__galleryIndex];
+        }
+
+        document.addEventListener('keydown', (e) => {
+            const lb = document.getElementById('product-lightbox');
+            if (!lb || !lb.classList.contains('open')) return;
+            if (e.key === 'Escape') closeLightbox();
+            if (e.key === 'ArrowRight') lightboxNav(1);
+            if (e.key === 'ArrowLeft') lightboxNav(-1);
+        });
+    </script>
+
+    <!-- Lightbox -->
+    <div id="product-lightbox" class="lightbox" onclick="if (event.target === this) closeLightbox()">
+        <button class="lightbox-close" onclick="closeLightbox()" aria-label="Close">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+        @if($product->images->count() > 1)
+            <button class="lightbox-nav lightbox-prev" onclick="lightboxNav(-1)" aria-label="Previous">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+            </button>
+            <button class="lightbox-nav lightbox-next" onclick="lightboxNav(1)" aria-label="Next">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+            </button>
+        @endif
+        <img id="lightbox-img" src="{{ $product->images->first()->image_path ?? '' }}" alt="{{ $product->name }}">
+    </div>
 </x-layouts.storefront>

@@ -46,15 +46,25 @@ class ProductSeeder extends Seeder
                 ]
             );
 
-            // Images
+            // Images — use the real local image when it exists, else picsum placeholder
             $product->images()->delete();
-            foreach (($data['images'] ?? [1]) as $i => $seed) {
+            $local = "images/products/{$slug}.jpg";
+            if (file_exists(public_path($local))) {
                 ProductImage::create([
                     'product_id' => $product->id,
-                    'image_path' => "https://picsum.photos/seed/{$slug}-{$seed}/600/600",
-                    'is_primary' => $i === 0,
-                    'position' => $i,
+                    'image_path' => "/" . $local,
+                    'is_primary' => true,
+                    'position' => 0,
                 ]);
+            } else {
+                foreach (($data['images'] ?? [1]) as $i => $seed) {
+                    ProductImage::create([
+                        'product_id' => $product->id,
+                        'image_path' => "https://picsum.photos/seed/{$slug}-{$seed}/1200/1200",
+                        'is_primary' => $i === 0,
+                        'position' => $i,
+                    ]);
+                }
             }
         }
     }

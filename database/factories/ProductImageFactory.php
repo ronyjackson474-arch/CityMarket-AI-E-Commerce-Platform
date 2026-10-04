@@ -14,7 +14,7 @@ class ProductImageFactory extends Factory
         $seed = fake()->uuid();
 
         return [
-            'image_path' => 'https://picsum.photos/seed/' . $seed . '/600/600',
+            'image_path' => 'https://picsum.photos/seed/' . $seed . '/1200/1200',
             'is_primary' => false,
             'position' => fake()->numberBetween(0, 10),
         ];

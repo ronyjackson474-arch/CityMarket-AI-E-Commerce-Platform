@@ -31,6 +31,7 @@
                     ['route' => 'admin.returns.index', 'label' => 'Returns', 'icon' => '↩️'],
                     ['route' => 'admin.coupons.index', 'label' => 'Coupons', 'icon' => '🎟️'],
                     ['route' => 'admin.users.index', 'label' => 'Users', 'icon' => '👥'],
+                    ['route' => 'admin.vendors.index', 'label' => 'Vendors', 'icon' => '🏪'],
                     ['route' => 'admin.ai-assistant.index', 'label' => 'AI Assistant', 'icon' => '🤖'],
                 ] as $item)
                     <a href="{{ route($item['route']) }}"

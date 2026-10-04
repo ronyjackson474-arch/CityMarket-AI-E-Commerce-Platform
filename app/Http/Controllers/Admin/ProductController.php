@@ -15,7 +15,7 @@ class ProductController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Product::with(['category:id,name', 'brand:id,name']);
+        $query = Product::with(['category:id,name', 'brand:id,name', 'vendor:id,shop_name,slug']);
 
         if ($search = $request->get('search')) {
             $query->where('name', 'like', "%{$search}%")
@@ -80,6 +80,18 @@ class ProductController extends Controller
 
         return redirect()->route('admin.products.index')
             ->with('success', "Product \"{$product->name}\" deleted.");
+    }
+
+    /** Approve / hide a product (used for vendor product approval). */
+    public function toggle(Product $product)
+    {
+        $product->update(['is_active' => ! $product->is_active]);
+
+        $msg = $product->is_active
+            ? "Product \"{$product->name}\" approved and now live."
+            : "Product \"{$product->name}\" hidden.";
+
+        return redirect()->route('admin.products.index')->with('success', $msg);
     }
 
     /**

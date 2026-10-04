@@ -1,6 +1,6 @@
 <x-layouts.admin title="Dashboard">
     <!-- Stats cards -->
-    <div class="grid grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         @foreach([
             ['Total Revenue', '₹' . number_format($stats['revenue']), 'bg-green-500', '💰'],
             ['Total Orders', $stats['orders'], 'bg-blue-500', '🧾'],
@@ -8,6 +8,8 @@
             ['Products', $stats['products'], 'bg-amber-500', '📦'],
             ['Pending Orders', $stats['pending_orders'], 'bg-orange-500', '⏳'],
             ['Low Stock Items', $stats['low_stock'], 'bg-red-500', '⚠️'],
+            ['Active Vendors', $stats['vendors'], 'bg-teal-500', '🏪'],
+            ['Pending Vendor Approvals', $stats['pending_vendors'], 'bg-fuchsia-500', '📝'],
         ] as $stat)
             <div class="bg-white rounded-xl border border-ink-100 p-5">
                 <div class="flex items-center justify-between">

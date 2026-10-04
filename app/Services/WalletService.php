@@ -23,6 +23,11 @@ class WalletService
      */
     public function awardOrderCashback(Order $order): ?WalletTransaction
     {
+        // Guest orders have no user — no wallet, no cashback.
+        if (! $order->user) {
+            return null;
+        }
+
         $wallet = $this->forUser($order->user);
         $cashback = round((float) $order->total * 0.01, 2); // 1% cashback
 

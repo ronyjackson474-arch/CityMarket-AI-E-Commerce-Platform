@@ -15,7 +15,7 @@ class Product extends Model
     use HasFactory;
 
     protected $fillable = [
-        'category_id', 'brand_id', 'name', 'slug', 'description', 'specifications',
+        'category_id', 'brand_id', 'vendor_id', 'name', 'slug', 'description', 'specifications',
         'sku', 'price', 'sale_price', 'stock', 'rating', 'review_count',
         'is_featured', 'is_flash_deal', 'is_active', 'flash_deal_ends_at',
     ];
@@ -97,6 +97,20 @@ class Product extends Model
             ->where('is_active', true)
             ->whereNotNull('sale_price')
             ->whereColumn('sale_price', '<', 'price');
+    }
+
+    public function vendor(): BelongsTo
+    {
+        return $this->belongsTo(Vendor::class);
+    }
+
+    /** Scope: only platform + approved vendors' products (storefront safety). */
+    public function scopeVisibleToStorefront(Builder $query): Builder
+    {
+        return $query->where(function ($q) {
+            $q->whereNull('vendor_id')
+                ->orWhereHas('vendor', fn ($v) => $v->where('status', 'approved'));
+        });
     }
 
     public function wishlistedBy(): BelongsToMany

@@ -35,6 +35,16 @@ class AuthController extends Controller
             return redirect()->intended(route('admin.dashboard'));
         }
 
+        if ($user->isVendor()) {
+            $vendor = $user->vendor()->first();
+
+            return redirect()->intended(
+                $vendor && $vendor->status === 'approved'
+                    ? route('vendor.dashboard')
+                    : route('vendor.sell')
+            );
+        }
+
         return redirect()->intended(route('home'));
     }
 

@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\User;
+use App\Models\Vendor;
 use Illuminate\Http\Request;
 
 class DashboardController extends Controller
@@ -19,6 +20,8 @@ class DashboardController extends Controller
             'products' => Product::count(),
             'low_stock' => Product::where('stock', '<', 10)->count(),
             'pending_orders' => Order::where('status', 'pending')->count(),
+            'pending_vendors' => Vendor::where('status', 'pending')->count(),
+            'vendors' => Vendor::where('status', 'approved')->count(),
         ];
 
         $recentOrders = Order::with('user:id,name', 'items')->latest()->limit(8)->get();

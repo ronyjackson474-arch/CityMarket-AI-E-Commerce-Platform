@@ -8,6 +8,7 @@ use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\OrderController as AdminOrderController;
 use App\Http\Controllers\Admin\ProductController as AdminProductController;
 use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\Admin\VendorController as AdminVendorController;
 use App\Http\Controllers\Storefront\AccountController;
 use App\Http\Controllers\Storefront\AiAssistantController;
 use App\Http\Controllers\Storefront\AuthController;
@@ -16,6 +17,8 @@ use App\Http\Controllers\Storefront\CheckoutController;
 use App\Http\Controllers\Storefront\HomeController;
 use App\Http\Controllers\Storefront\ReviewController;
 use App\Http\Controllers\Storefront\ShopController;
+use App\Http\Controllers\Storefront\VendorController;
+use App\Http\Controllers\Storefront\VendorShopController;
 use App\Http\Controllers\Storefront\WishlistController;
 use Illuminate\Support\Facades\Route;
 
@@ -32,6 +35,14 @@ Route::post('/login', [AuthController::class, 'login'])->name('login.post');
 Route::get('/register', [AuthController::class, 'showRegister'])->name('register');
 Route::post('/register', [AuthController::class, 'register'])->name('register.post');
 Route::post('/logout', [AuthController::class, 'authLogout'])->name('logout');
+
+// Vendor: become a seller (public landing, auth-gated form)
+Route::get('/sell', [VendorController::class, 'showSell'])->name('vendor.sell');
+Route::post('/sell', [VendorController::class, 'register'])->middleware('auth')->name('vendor.register');
+
+// Vendor directory (public shop pages are defined AFTER the /vendor/* panel
+// group at the bottom of the panel section so panel routes always win)
+Route::get('/vendors', [VendorShopController::class, 'index'])->name('vendors');
 
 // Cart (guests and auth)
 Route::get('/cart', [CartController::class, 'index'])->name('cart');
@@ -85,6 +96,27 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/account/referrals', [AccountController::class, 'referrals'])->name('account.referrals');
 });
 
+// ===== Vendor (seller) panel =====
+use App\Http\Controllers\Vendor\DashboardController as VendorDashboardController;
+
+Route::prefix('vendor')->name('vendor.')->middleware(['auth', 'vendor'])->group(function () {
+    Route::get('/dashboard', [VendorDashboardController::class, 'dashboard'])->name('dashboard');
+    Route::get('/products', [VendorDashboardController::class, 'products'])->name('products.index');
+    Route::get('/products/create', [VendorDashboardController::class, 'createProduct'])->name('products.create');
+    Route::post('/products', [VendorDashboardController::class, 'storeProduct'])->name('products.store');
+    Route::get('/products/{product}/edit', [VendorDashboardController::class, 'editProduct'])->name('products.edit');
+    Route::put('/products/{product}', [VendorDashboardController::class, 'updateProduct'])->name('products.update');
+    Route::delete('/products/{product}', [VendorDashboardController::class, 'destroyProduct'])->name('products.destroy');
+    Route::get('/orders', [VendorDashboardController::class, 'orders'])->name('orders');
+    Route::get('/profile', [VendorDashboardController::class, 'profile'])->name('profile');
+    Route::put('/profile', [VendorDashboardController::class, 'updateProfile'])->name('profile.update');
+});
+
+// Public vendor shop page — AFTER the /vendor/* panel group so panel routes win
+Route::get('/vendor/{slug}', [VendorShopController::class, 'show'])
+    ->where('slug', '[a-z0-9\-]+')
+    ->name('vendor.shop');
+
 // ===== Admin =====
 Route::prefix('admin')->name('admin.')->group(function () {
     // Admin login uses the same /login form but redirects to admin.dashboard after.
@@ -99,6 +131,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::post('/logout', [AuthController::class, 'authLogout'])->name('logout');
 
         Route::resource('products', AdminProductController::class)->except('show');
+        Route::patch('/products/{product}/toggle', [AdminProductController::class, 'toggle'])->name('products.toggle');
         Route::resource('categories', CategoryController::class)->except('show');
         Route::resource('brands', BrandController::class)->except('show');
         Route::resource('coupons', CouponController::class)->except('show');
@@ -113,6 +146,12 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
         Route::get('/users', [UserController::class, 'index'])->name('users.index');
         Route::post('/users/{user}/toggle-status', [UserController::class, 'toggleStatus'])->name('users.toggle-status');
+
+        // Vendor management
+        Route::get('/vendors', [AdminVendorController::class, 'index'])->name('vendors.index');
+        Route::post('/vendors/{vendor}/approve', [AdminVendorController::class, 'approve'])->name('vendors.approve');
+        Route::post('/vendors/{vendor}/suspend', [AdminVendorController::class, 'suspend'])->name('vendors.suspend');
+        Route::post('/vendors/{vendor}/commission', [AdminVendorController::class, 'updateCommission'])->name('vendors.commission');
 
         // AI Admin Assistant
         Route::get('/ai-assistant', [AdminAiController::class, 'index'])->name('ai-assistant.index');

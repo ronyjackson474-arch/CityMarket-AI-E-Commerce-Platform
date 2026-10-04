@@ -18,6 +18,7 @@
                 <thead class="bg-ink-50 text-ink-500 text-xs uppercase">
                     <tr>
                         <th class="text-left px-5 py-3 font-medium">Product</th>
+                        <th class="text-left px-5 py-3 font-medium">Vendor</th>
                         <th class="text-left px-5 py-3 font-medium">Category</th>
                         <th class="text-left px-5 py-3 font-medium">Brand</th>
                         <th class="text-left px-5 py-3 font-medium">Price</th>
@@ -32,6 +33,13 @@
                             <td class="px-5 py-3">
                                 <div class="font-medium text-ink-800">{{ $product->name }}</div>
                                 <div class="text-xs text-ink-400">{{ $product->sku }}</div>
+                            </td>
+                            <td class="px-5 py-3">
+                                @if($product->vendor)
+                                    <a href="{{ route('vendor.shop', $product->vendor->slug) }}" class="text-xs font-semibold text-purple-700 hover:underline bg-purple-50 px-2 py-0.5 rounded-full">🏪 {{ $product->vendor->shop_name }}</a>
+                                @else
+                                    <span class="text-xs text-ink-400">Platform</span>
+                                @endif
                             </td>
                             <td class="px-5 py-3 text-ink-600">{{ $product->category?->name }}</td>
                             <td class="px-5 py-3 text-ink-600">{{ $product->brand?->name ?? '—' }}</td>
@@ -52,6 +60,12 @@
                                 @endif
                             </td>
                             <td class="px-5 py-3 text-right whitespace-nowrap">
+                                @if($product->vendor && !$product->is_active)
+                                    <form action="{{ route('admin.products.toggle', $product) }}" method="POST" class="inline mr-2" onsubmit="return confirm('Approve vendor product {{ $product->name }}?')">
+                                        @csrf @method('PATCH')
+                                        <button type="submit" class="text-green-600 hover:text-green-700 text-xs font-medium">Approve</button>
+                                    </form>
+                                @endif
                                 <a href="{{ route('admin.products.edit', $product) }}" class="text-brand-600 hover:text-brand-700 text-xs font-medium">Edit</a>
                                 <form action="{{ route('admin.products.destroy', $product) }}" method="POST" class="inline ml-2" onsubmit="return confirm('Delete {{ $product->name }}?')">
                                     @csrf @method('DELETE')
@@ -60,7 +74,7 @@
                             </td>
                         </tr>
                     @empty
-                        <tr><td colspan="7" class="px-5 py-8 text-center text-ink-400">No products found.</td></tr>
+                        <tr><td colspan="8" class="px-5 py-8 text-center text-ink-400">No products found.</td></tr>
                     @endforelse
                 </tbody>
             </table>

@@ -47,6 +47,11 @@ class ShopController extends Controller
             ->with(['category', 'brand', 'images', 'reviews.user:id,name', 'reviews' => fn ($q) => $q->latest()->limit(5)])
             ->firstOrFail();
 
+        // Hide products of suspended vendors from the public storefront.
+        if ($product->vendor_id && optional($product->vendor)->status !== 'approved') {
+            abort(404);
+        }
+
         $related = Product::where('category_id', $product->category_id)
             ->where('id', '!=', $product->id)
             ->where('is_active', true)

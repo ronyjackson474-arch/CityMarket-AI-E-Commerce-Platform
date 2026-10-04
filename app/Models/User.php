@@ -78,9 +78,19 @@ class User extends Authenticatable
         return $this->chatConversations();
     }
 
+    public function vendor(): HasOne
+    {
+        return $this->hasOne(Vendor::class);
+    }
+
     public function isAdmin(): bool
     {
         return $this->role === 'admin';
+    }
+
+    public function isVendor(): bool
+    {
+        return $this->role === 'vendor';
     }
 
     public function isCustomer(): bool
